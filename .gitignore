@@ -99,3 +99,9 @@ ENV/
 
 # mypy
 .mypy_cache/
+
+# Pycharm
+.idea/
+
+# antlr4
+antlr-4.7-complete.jar
