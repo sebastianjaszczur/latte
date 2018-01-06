@@ -8,65 +8,64 @@ import sys
 def serializedATN():
     with StringIO() as buf:
         buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3&")
-        buf.write("\u009f\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
-        buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\3\2\7\2\26\n\2\f\2\16\2\31\13")
-        buf.write("\2\3\3\3\3\3\3\3\3\3\3\3\3\7\3!\n\3\f\3\16\3$\13\3\5\3")
-        buf.write("&\n\3\3\3\3\3\3\3\3\4\3\4\3\4\3\5\3\5\7\5\60\n\5\f\5\16")
-        buf.write("\5\63\13\5\3\5\3\5\3\6\3\6\3\6\3\6\5\6;\n\6\3\7\3\7\3")
-        buf.write("\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\5\7G\n\7\3\b\3\b\3\b\3")
-        buf.write("\b\3\b\3\b\7\bO\n\b\f\b\16\bR\13\b\3\b\3\b\3\b\3\b\3\b")
-        buf.write("\3\b\3\b\5\b[\n\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\5\b")
-        buf.write("e\n\b\3\b\3\b\3\b\3\b\3\b\3\b\3\b\5\bn\n\b\3\t\3\t\3\n")
-        buf.write("\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\7\n}\n\n\f\n")
-        buf.write("\16\n\u0080\13\n\5\n\u0082\n\n\3\n\3\n\3\n\3\n\3\n\5\n")
-        buf.write("\u0089\n\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3\n")
-        buf.write("\3\n\3\n\3\n\3\n\7\n\u009a\n\n\f\n\16\n\u009d\13\n\3\n")
-        buf.write("\2\3\22\13\2\4\6\b\n\f\16\20\22\2\5\3\2\25\27\3\2\30\31")
-        buf.write("\3\2\32\37\2\u00b4\2\27\3\2\2\2\4\32\3\2\2\2\6*\3\2\2")
-        buf.write("\2\b-\3\2\2\2\n:\3\2\2\2\fF\3\2\2\2\16m\3\2\2\2\20o\3")
-        buf.write("\2\2\2\22\u0088\3\2\2\2\24\26\5\4\3\2\25\24\3\2\2\2\26")
-        buf.write("\31\3\2\2\2\27\25\3\2\2\2\27\30\3\2\2\2\30\3\3\2\2\2\31")
-        buf.write("\27\3\2\2\2\32\33\5\20\t\2\33\34\7&\2\2\34%\7\3\2\2\35")
-        buf.write("\"\5\6\4\2\36\37\7\4\2\2\37!\5\6\4\2 \36\3\2\2\2!$\3\2")
-        buf.write("\2\2\" \3\2\2\2\"#\3\2\2\2#&\3\2\2\2$\"\3\2\2\2%\35\3")
-        buf.write("\2\2\2%&\3\2\2\2&\'\3\2\2\2\'(\7\5\2\2()\5\b\5\2)\5\3")
-        buf.write("\2\2\2*+\5\20\t\2+,\7&\2\2,\7\3\2\2\2-\61\7\6\2\2.\60")
-        buf.write("\5\16\b\2/.\3\2\2\2\60\63\3\2\2\2\61/\3\2\2\2\61\62\3")
-        buf.write("\2\2\2\62\64\3\2\2\2\63\61\3\2\2\2\64\65\7\7\2\2\65\t")
-        buf.write("\3\2\2\2\66;\7&\2\2\678\7&\2\289\7\b\2\29;\5\22\n\2:\66")
-        buf.write("\3\2\2\2:\67\3\2\2\2;\13\3\2\2\2<=\5\22\n\2=>\7\b\2\2")
-        buf.write(">?\5\22\n\2?G\3\2\2\2@A\5\22\n\2AB\7\t\2\2BG\3\2\2\2C")
-        buf.write("D\5\22\n\2DE\7\n\2\2EG\3\2\2\2F<\3\2\2\2F@\3\2\2\2FC\3")
-        buf.write("\2\2\2G\r\3\2\2\2Hn\5\b\5\2In\7\13\2\2JK\5\20\t\2KP\5")
-        buf.write("\n\6\2LM\7\4\2\2MO\5\n\6\2NL\3\2\2\2OR\3\2\2\2PN\3\2\2")
-        buf.write("\2PQ\3\2\2\2QS\3\2\2\2RP\3\2\2\2ST\7\13\2\2Tn\3\2\2\2")
-        buf.write("UV\5\f\7\2VW\7\13\2\2Wn\3\2\2\2XZ\7\f\2\2Y[\5\22\n\2Z")
-        buf.write("Y\3\2\2\2Z[\3\2\2\2[\\\3\2\2\2\\n\7\13\2\2]^\7\r\2\2^")
-        buf.write("_\7\3\2\2_`\5\22\n\2`a\7\5\2\2ad\5\16\b\2bc\7\16\2\2c")
-        buf.write("e\5\16\b\2db\3\2\2\2de\3\2\2\2en\3\2\2\2fg\7\17\2\2gh")
-        buf.write("\7\3\2\2hi\5\22\n\2ij\7\5\2\2jk\5\16\b\2kn\3\2\2\2ln\5")
-        buf.write("\22\n\2mH\3\2\2\2mI\3\2\2\2mJ\3\2\2\2mU\3\2\2\2mX\3\2")
-        buf.write("\2\2m]\3\2\2\2mf\3\2\2\2ml\3\2\2\2n\17\3\2\2\2op\7&\2")
-        buf.write("\2p\21\3\2\2\2qr\b\n\1\2r\u0089\7&\2\2s\u0089\7%\2\2t")
-        buf.write("\u0089\7$\2\2u\u0089\7\20\2\2v\u0089\7\21\2\2wx\7&\2\2")
-        buf.write("x\u0081\7\3\2\2y~\5\22\n\2z{\7\4\2\2{}\5\22\n\2|z\3\2")
-        buf.write("\2\2}\u0080\3\2\2\2~|\3\2\2\2~\177\3\2\2\2\177\u0082\3")
-        buf.write("\2\2\2\u0080~\3\2\2\2\u0081y\3\2\2\2\u0081\u0082\3\2\2")
-        buf.write("\2\u0082\u0083\3\2\2\2\u0083\u0089\7\5\2\2\u0084\u0085")
-        buf.write("\7\31\2\2\u0085\u0089\5\22\n\t\u0086\u0087\7\22\2\2\u0087")
-        buf.write("\u0089\5\22\n\b\u0088q\3\2\2\2\u0088s\3\2\2\2\u0088t\3")
-        buf.write("\2\2\2\u0088u\3\2\2\2\u0088v\3\2\2\2\u0088w\3\2\2\2\u0088")
-        buf.write("\u0084\3\2\2\2\u0088\u0086\3\2\2\2\u0089\u009b\3\2\2\2")
-        buf.write("\u008a\u008b\f\7\2\2\u008b\u008c\t\2\2\2\u008c\u009a\5")
-        buf.write("\22\n\b\u008d\u008e\f\6\2\2\u008e\u008f\t\3\2\2\u008f")
-        buf.write("\u009a\5\22\n\7\u0090\u0091\f\5\2\2\u0091\u0092\t\4\2")
-        buf.write("\2\u0092\u009a\5\22\n\6\u0093\u0094\f\4\2\2\u0094\u0095")
-        buf.write("\7\23\2\2\u0095\u009a\5\22\n\4\u0096\u0097\f\3\2\2\u0097")
-        buf.write("\u0098\7\24\2\2\u0098\u009a\5\22\n\3\u0099\u008a\3\2\2")
-        buf.write("\2\u0099\u008d\3\2\2\2\u0099\u0090\3\2\2\2\u0099\u0093")
-        buf.write("\3\2\2\2\u0099\u0096\3\2\2\2\u009a\u009d\3\2\2\2\u009b")
-        buf.write("\u0099\3\2\2\2\u009b\u009c\3\2\2\2\u009c\23\3\2\2\2\u009d")
-        buf.write("\u009b\3\2\2\2\21\27\"%\61:FPZdm~\u0081\u0088\u0099\u009b")
+        buf.write("\u009d\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
+        buf.write("\4\b\t\b\4\t\t\t\3\2\7\2\24\n\2\f\2\16\2\27\13\2\3\3\3")
+        buf.write("\3\3\3\3\3\3\3\3\3\7\3\37\n\3\f\3\16\3\"\13\3\5\3$\n\3")
+        buf.write("\3\3\3\3\3\3\3\4\3\4\3\4\3\5\3\5\7\5.\n\5\f\5\16\5\61")
+        buf.write("\13\5\3\5\3\5\3\6\3\6\3\6\3\6\5\69\n\6\3\7\3\7\3\7\3\7")
+        buf.write("\3\7\3\7\7\7A\n\7\f\7\16\7D\13\7\3\7\3\7\3\7\3\7\3\7\3")
+        buf.write("\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\5\7W\n")
+        buf.write("\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\3\7\5\7a\n\7\3\7\3\7\3")
+        buf.write("\7\3\7\3\7\3\7\3\7\3\7\3\7\5\7l\n\7\3\b\3\b\3\t\3\t\3")
+        buf.write("\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\7\t{\n\t\f\t\16\t~")
+        buf.write("\13\t\5\t\u0080\n\t\3\t\3\t\3\t\3\t\3\t\5\t\u0087\n\t")
+        buf.write("\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3\t\3")
+        buf.write("\t\3\t\7\t\u0098\n\t\f\t\16\t\u009b\13\t\3\t\2\3\20\n")
+        buf.write("\2\4\6\b\n\f\16\20\2\5\3\2\25\27\3\2\30\31\3\2\32\37\2")
+        buf.write("\u00b3\2\25\3\2\2\2\4\30\3\2\2\2\6(\3\2\2\2\b+\3\2\2\2")
+        buf.write("\n8\3\2\2\2\fk\3\2\2\2\16m\3\2\2\2\20\u0086\3\2\2\2\22")
+        buf.write("\24\5\4\3\2\23\22\3\2\2\2\24\27\3\2\2\2\25\23\3\2\2\2")
+        buf.write("\25\26\3\2\2\2\26\3\3\2\2\2\27\25\3\2\2\2\30\31\5\16\b")
+        buf.write("\2\31\32\7$\2\2\32#\7\3\2\2\33 \5\6\4\2\34\35\7\4\2\2")
+        buf.write("\35\37\5\6\4\2\36\34\3\2\2\2\37\"\3\2\2\2 \36\3\2\2\2")
+        buf.write(" !\3\2\2\2!$\3\2\2\2\" \3\2\2\2#\33\3\2\2\2#$\3\2\2\2")
+        buf.write("$%\3\2\2\2%&\7\5\2\2&\'\5\b\5\2\'\5\3\2\2\2()\5\16\b\2")
+        buf.write(")*\7$\2\2*\7\3\2\2\2+/\7\6\2\2,.\5\f\7\2-,\3\2\2\2.\61")
+        buf.write("\3\2\2\2/-\3\2\2\2/\60\3\2\2\2\60\62\3\2\2\2\61/\3\2\2")
+        buf.write("\2\62\63\7\7\2\2\63\t\3\2\2\2\649\7$\2\2\65\66\7$\2\2")
+        buf.write("\66\67\7\b\2\2\679\5\20\t\28\64\3\2\2\28\65\3\2\2\29\13")
+        buf.write("\3\2\2\2:l\5\b\5\2;l\7\t\2\2<=\5\16\b\2=B\5\n\6\2>?\7")
+        buf.write("\4\2\2?A\5\n\6\2@>\3\2\2\2AD\3\2\2\2B@\3\2\2\2BC\3\2\2")
+        buf.write("\2CE\3\2\2\2DB\3\2\2\2EF\7\t\2\2Fl\3\2\2\2GH\5\20\t\2")
+        buf.write("HI\7\b\2\2IJ\5\20\t\2JK\7\t\2\2Kl\3\2\2\2LM\5\20\t\2M")
+        buf.write("N\7\n\2\2NO\7\t\2\2Ol\3\2\2\2PQ\5\20\t\2QR\7\13\2\2RS")
+        buf.write("\7\t\2\2Sl\3\2\2\2TV\7\f\2\2UW\5\20\t\2VU\3\2\2\2VW\3")
+        buf.write("\2\2\2WX\3\2\2\2Xl\7\t\2\2YZ\7\r\2\2Z[\7\3\2\2[\\\5\20")
+        buf.write("\t\2\\]\7\5\2\2]`\5\f\7\2^_\7\16\2\2_a\5\f\7\2`^\3\2\2")
+        buf.write("\2`a\3\2\2\2al\3\2\2\2bc\7\17\2\2cd\7\3\2\2de\5\20\t\2")
+        buf.write("ef\7\5\2\2fg\5\f\7\2gl\3\2\2\2hi\5\20\t\2ij\7\t\2\2jl")
+        buf.write("\3\2\2\2k:\3\2\2\2k;\3\2\2\2k<\3\2\2\2kG\3\2\2\2kL\3\2")
+        buf.write("\2\2kP\3\2\2\2kT\3\2\2\2kY\3\2\2\2kb\3\2\2\2kh\3\2\2\2")
+        buf.write("l\r\3\2\2\2mn\7$\2\2n\17\3\2\2\2op\b\t\1\2p\u0087\7$\2")
+        buf.write("\2q\u0087\7#\2\2r\u0087\7%\2\2s\u0087\7\20\2\2t\u0087")
+        buf.write("\7\21\2\2uv\7$\2\2v\177\7\3\2\2w|\5\20\t\2xy\7\4\2\2y")
+        buf.write("{\5\20\t\2zx\3\2\2\2{~\3\2\2\2|z\3\2\2\2|}\3\2\2\2}\u0080")
+        buf.write("\3\2\2\2~|\3\2\2\2\177w\3\2\2\2\177\u0080\3\2\2\2\u0080")
+        buf.write("\u0081\3\2\2\2\u0081\u0087\7\5\2\2\u0082\u0083\7\31\2")
+        buf.write("\2\u0083\u0087\5\20\t\t\u0084\u0085\7\22\2\2\u0085\u0087")
+        buf.write("\5\20\t\b\u0086o\3\2\2\2\u0086q\3\2\2\2\u0086r\3\2\2\2")
+        buf.write("\u0086s\3\2\2\2\u0086t\3\2\2\2\u0086u\3\2\2\2\u0086\u0082")
+        buf.write("\3\2\2\2\u0086\u0084\3\2\2\2\u0087\u0099\3\2\2\2\u0088")
+        buf.write("\u0089\f\7\2\2\u0089\u008a\t\2\2\2\u008a\u0098\5\20\t")
+        buf.write("\b\u008b\u008c\f\6\2\2\u008c\u008d\t\3\2\2\u008d\u0098")
+        buf.write("\5\20\t\7\u008e\u008f\f\5\2\2\u008f\u0090\t\4\2\2\u0090")
+        buf.write("\u0098\5\20\t\6\u0091\u0092\f\4\2\2\u0092\u0093\7\23\2")
+        buf.write("\2\u0093\u0098\5\20\t\4\u0094\u0095\f\3\2\2\u0095\u0096")
+        buf.write("\7\24\2\2\u0096\u0098\5\20\t\3\u0097\u0088\3\2\2\2\u0097")
+        buf.write("\u008b\3\2\2\2\u0097\u008e\3\2\2\2\u0097\u0091\3\2\2\2")
+        buf.write("\u0097\u0094\3\2\2\2\u0098\u009b\3\2\2\2\u0099\u0097\3")
+        buf.write("\2\2\2\u0099\u009a\3\2\2\2\u009a\21\3\2\2\2\u009b\u0099")
+        buf.write("\3\2\2\2\20\25 #/8BV`k|\177\u0086\u0097\u0099")
         return buf.getvalue()
 
 
@@ -81,7 +80,7 @@ class LatteParser ( Parser ):
     sharedContextCache = PredictionContextCache()
 
     literalNames = [ "<INVALID>", "'('", "','", "')'", "'{'", "'}'", "'='", 
-                     "'++'", "'--'", "';'", "'return'", "'if'", "'else'", 
+                     "';'", "'++'", "'--'", "'return'", "'if'", "'else'", 
                      "'while'", "'false'", "'true'", "'!'", "'&&'", "'||'", 
                      "'*'", "'/'", "'%'", "'+'", "'-'", "'<'", "'<='", "'>'", 
                      "'>='", "'=='", "'!='" ]
@@ -92,21 +91,20 @@ class LatteParser ( Parser ):
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "MUL", "DIV", 
                       "MOD", "ADD", "SUB", "LT", "LE", "GT", "GE", "EQ", 
-                      "NE", "WS", "CHAR", "COMMENT_SL", "COMMENT_ML", "Strval", 
-                      "INT", "IDENT" ]
+                      "NE", "WS", "COMMENT_SL", "COMMENT_ML", "INT", "IDENT", 
+                      "Strval", "CHAR" ]
 
     RULE_program = 0
     RULE_fundef = 1
     RULE_arg = 2
     RULE_block = 3
     RULE_item = 4
-    RULE_assign = 5
-    RULE_stmt = 6
-    RULE_vtype = 7
-    RULE_expr = 8
+    RULE_stmt = 5
+    RULE_vtype = 6
+    RULE_expr = 7
 
-    ruleNames =  [ "program", "fundef", "arg", "block", "item", "assign", 
-                   "stmt", "vtype", "expr" ]
+    ruleNames =  [ "program", "fundef", "arg", "block", "item", "stmt", 
+                   "vtype", "expr" ]
 
     EOF = Token.EOF
     T__0=1
@@ -139,12 +137,12 @@ class LatteParser ( Parser ):
     EQ=28
     NE=29
     WS=30
-    CHAR=31
-    COMMENT_SL=32
-    COMMENT_ML=33
-    Strval=34
-    INT=35
-    IDENT=36
+    COMMENT_SL=31
+    COMMENT_ML=32
+    INT=33
+    IDENT=34
+    Strval=35
+    CHAR=36
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -194,13 +192,13 @@ class LatteParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 21
+            self.state = 19
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==LatteParser.IDENT:
-                self.state = 18
+                self.state = 16
                 self.fundef()
-                self.state = 23
+                self.state = 21
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -263,35 +261,35 @@ class LatteParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 24
+            self.state = 22
             self.vtype()
-            self.state = 25
+            self.state = 23
             self.match(LatteParser.IDENT)
-            self.state = 26
+            self.state = 24
             self.match(LatteParser.T__0)
-            self.state = 35
+            self.state = 33
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==LatteParser.IDENT:
-                self.state = 27
+                self.state = 25
                 self.arg()
-                self.state = 32
+                self.state = 30
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==LatteParser.T__1:
-                    self.state = 28
+                    self.state = 26
                     self.match(LatteParser.T__1)
-                    self.state = 29
+                    self.state = 27
                     self.arg()
-                    self.state = 34
+                    self.state = 32
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
 
 
-            self.state = 37
+            self.state = 35
             self.match(LatteParser.T__2)
-            self.state = 38
+            self.state = 36
             self.block()
         except RecognitionException as re:
             localctx.exception = re
@@ -340,9 +338,9 @@ class LatteParser ( Parser ):
         self.enterRule(localctx, 4, self.RULE_arg)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 40
+            self.state = 38
             self.vtype()
-            self.state = 41
+            self.state = 39
             self.match(LatteParser.IDENT)
         except RecognitionException as re:
             localctx.exception = re
@@ -392,19 +390,19 @@ class LatteParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 43
+            self.state = 41
             self.match(LatteParser.T__3)
-            self.state = 47
+            self.state = 45
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__3) | (1 << LatteParser.T__8) | (1 << LatteParser.T__9) | (1 << LatteParser.T__10) | (1 << LatteParser.T__12) | (1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.Strval) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT))) != 0):
-                self.state = 44
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__3) | (1 << LatteParser.T__6) | (1 << LatteParser.T__9) | (1 << LatteParser.T__10) | (1 << LatteParser.T__12) | (1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.Strval))) != 0):
+                self.state = 42
                 self.stmt()
-                self.state = 49
+                self.state = 47
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 50
+            self.state = 48
             self.match(LatteParser.T__4)
         except RecognitionException as re:
             localctx.exception = re
@@ -452,99 +450,23 @@ class LatteParser ( Parser ):
         localctx = LatteParser.ItemContext(self, self._ctx, self.state)
         self.enterRule(localctx, 8, self.RULE_item)
         try:
-            self.state = 56
+            self.state = 54
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,4,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
+                self.state = 50
+                self.match(LatteParser.IDENT)
+                pass
+
+            elif la_ == 2:
+                self.enterOuterAlt(localctx, 2)
+                self.state = 51
+                self.match(LatteParser.IDENT)
                 self.state = 52
-                self.match(LatteParser.IDENT)
-                pass
-
-            elif la_ == 2:
-                self.enterOuterAlt(localctx, 2)
+                self.match(LatteParser.T__5)
                 self.state = 53
-                self.match(LatteParser.IDENT)
-                self.state = 54
-                self.match(LatteParser.T__5)
-                self.state = 55
                 self.expr(0)
-                pass
-
-
-        except RecognitionException as re:
-            localctx.exception = re
-            self._errHandler.reportError(self, re)
-            self._errHandler.recover(self, re)
-        finally:
-            self.exitRule()
-        return localctx
-
-    class AssignContext(ParserRuleContext):
-
-        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
-            super().__init__(parent, invokingState)
-            self.parser = parser
-
-        def expr(self, i:int=None):
-            if i is None:
-                return self.getTypedRuleContexts(LatteParser.ExprContext)
-            else:
-                return self.getTypedRuleContext(LatteParser.ExprContext,i)
-
-
-        def getRuleIndex(self):
-            return LatteParser.RULE_assign
-
-        def enterRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "enterAssign" ):
-                listener.enterAssign(self)
-
-        def exitRule(self, listener:ParseTreeListener):
-            if hasattr( listener, "exitAssign" ):
-                listener.exitAssign(self)
-
-        def accept(self, visitor:ParseTreeVisitor):
-            if hasattr( visitor, "visitAssign" ):
-                return visitor.visitAssign(self)
-            else:
-                return visitor.visitChildren(self)
-
-
-
-
-    def assign(self):
-
-        localctx = LatteParser.AssignContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 10, self.RULE_assign)
-        try:
-            self.state = 68
-            self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,5,self._ctx)
-            if la_ == 1:
-                self.enterOuterAlt(localctx, 1)
-                self.state = 58
-                self.expr(0)
-                self.state = 59
-                self.match(LatteParser.T__5)
-                self.state = 60
-                self.expr(0)
-                pass
-
-            elif la_ == 2:
-                self.enterOuterAlt(localctx, 2)
-                self.state = 62
-                self.expr(0)
-                self.state = 63
-                self.match(LatteParser.T__6)
-                pass
-
-            elif la_ == 3:
-                self.enterOuterAlt(localctx, 3)
-                self.state = 65
-                self.expr(0)
-                self.state = 66
-                self.match(LatteParser.T__7)
                 pass
 
 
@@ -570,6 +492,56 @@ class LatteParser ( Parser ):
         def copyFrom(self, ctx:ParserRuleContext):
             super().copyFrom(ctx)
 
+
+
+    class SdecrContext(StmtContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a LatteParser.StmtContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def expr(self):
+            return self.getTypedRuleContext(LatteParser.ExprContext,0)
+
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterSdecr" ):
+                listener.enterSdecr(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitSdecr" ):
+                listener.exitSdecr(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSdecr" ):
+                return visitor.visitSdecr(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+    class SincrContext(StmtContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a LatteParser.StmtContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def expr(self):
+            return self.getTypedRuleContext(LatteParser.ExprContext,0)
+
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterSincr" ):
+                listener.enterSincr(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitSincr" ):
+                listener.exitSincr(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitSincr" ):
+                return visitor.visitSincr(self)
+            else:
+                return visitor.visitChildren(self)
 
 
     class SifelContext(StmtContext):
@@ -634,8 +606,11 @@ class LatteParser ( Parser ):
             super().__init__(parser)
             self.copyFrom(ctx)
 
-        def assign(self):
-            return self.getTypedRuleContext(LatteParser.AssignContext,0)
+        def expr(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(LatteParser.ExprContext)
+            else:
+                return self.getTypedRuleContext(LatteParser.ExprContext,i)
 
 
         def enterRule(self, listener:ParseTreeListener):
@@ -788,120 +763,148 @@ class LatteParser ( Parser ):
     def stmt(self):
 
         localctx = LatteParser.StmtContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 12, self.RULE_stmt)
+        self.enterRule(localctx, 10, self.RULE_stmt)
         self._la = 0 # Token type
         try:
-            self.state = 107
+            self.state = 105
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,9,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,8,self._ctx)
             if la_ == 1:
                 localctx = LatteParser.SblocContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 70
+                self.state = 56
                 self.block()
                 pass
 
             elif la_ == 2:
                 localctx = LatteParser.SsemiContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 71
-                self.match(LatteParser.T__8)
+                self.state = 57
+                self.match(LatteParser.T__6)
                 pass
 
             elif la_ == 3:
                 localctx = LatteParser.SdeclContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
-                self.state = 72
+                self.state = 58
                 self.vtype()
-                self.state = 73
+                self.state = 59
                 self.item()
-                self.state = 78
+                self.state = 64
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while _la==LatteParser.T__1:
-                    self.state = 74
+                    self.state = 60
                     self.match(LatteParser.T__1)
-                    self.state = 75
+                    self.state = 61
                     self.item()
-                    self.state = 80
+                    self.state = 66
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
 
-                self.state = 81
-                self.match(LatteParser.T__8)
+                self.state = 67
+                self.match(LatteParser.T__6)
                 pass
 
             elif la_ == 4:
                 localctx = LatteParser.SassiContext(self, localctx)
                 self.enterOuterAlt(localctx, 4)
-                self.state = 83
-                self.assign()
-                self.state = 84
-                self.match(LatteParser.T__8)
+                self.state = 69
+                self.expr(0)
+                self.state = 70
+                self.match(LatteParser.T__5)
+                self.state = 71
+                self.expr(0)
+                self.state = 72
+                self.match(LatteParser.T__6)
                 pass
 
             elif la_ == 5:
-                localctx = LatteParser.SretuContext(self, localctx)
+                localctx = LatteParser.SincrContext(self, localctx)
                 self.enterOuterAlt(localctx, 5)
-                self.state = 86
-                self.match(LatteParser.T__9)
-                self.state = 88
-                self._errHandler.sync(self)
-                _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.Strval) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT))) != 0):
-                    self.state = 87
-                    self.expr(0)
-
-
-                self.state = 90
-                self.match(LatteParser.T__8)
+                self.state = 74
+                self.expr(0)
+                self.state = 75
+                self.match(LatteParser.T__7)
+                self.state = 76
+                self.match(LatteParser.T__6)
                 pass
 
             elif la_ == 6:
-                localctx = LatteParser.SifelContext(self, localctx)
+                localctx = LatteParser.SdecrContext(self, localctx)
                 self.enterOuterAlt(localctx, 6)
-                self.state = 91
-                self.match(LatteParser.T__10)
-                self.state = 92
-                self.match(LatteParser.T__0)
-                self.state = 93
+                self.state = 78
                 self.expr(0)
-                self.state = 94
-                self.match(LatteParser.T__2)
-                self.state = 95
-                self.stmt()
-                self.state = 98
+                self.state = 79
+                self.match(LatteParser.T__8)
+                self.state = 80
+                self.match(LatteParser.T__6)
+                pass
+
+            elif la_ == 7:
+                localctx = LatteParser.SretuContext(self, localctx)
+                self.enterOuterAlt(localctx, 7)
+                self.state = 82
+                self.match(LatteParser.T__9)
+                self.state = 84
                 self._errHandler.sync(self)
-                la_ = self._interp.adaptivePredict(self._input,8,self._ctx)
+                _la = self._input.LA(1)
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.Strval))) != 0):
+                    self.state = 83
+                    self.expr(0)
+
+
+                self.state = 86
+                self.match(LatteParser.T__6)
+                pass
+
+            elif la_ == 8:
+                localctx = LatteParser.SifelContext(self, localctx)
+                self.enterOuterAlt(localctx, 8)
+                self.state = 87
+                self.match(LatteParser.T__10)
+                self.state = 88
+                self.match(LatteParser.T__0)
+                self.state = 89
+                self.expr(0)
+                self.state = 90
+                self.match(LatteParser.T__2)
+                self.state = 91
+                self.stmt()
+                self.state = 94
+                self._errHandler.sync(self)
+                la_ = self._interp.adaptivePredict(self._input,7,self._ctx)
                 if la_ == 1:
-                    self.state = 96
+                    self.state = 92
                     self.match(LatteParser.T__11)
-                    self.state = 97
+                    self.state = 93
                     self.stmt()
 
 
                 pass
 
-            elif la_ == 7:
+            elif la_ == 9:
                 localctx = LatteParser.SwhilContext(self, localctx)
-                self.enterOuterAlt(localctx, 7)
-                self.state = 100
+                self.enterOuterAlt(localctx, 9)
+                self.state = 96
                 self.match(LatteParser.T__12)
-                self.state = 101
+                self.state = 97
                 self.match(LatteParser.T__0)
-                self.state = 102
+                self.state = 98
                 self.expr(0)
-                self.state = 103
+                self.state = 99
                 self.match(LatteParser.T__2)
-                self.state = 104
+                self.state = 100
                 self.stmt()
                 pass
 
-            elif la_ == 8:
+            elif la_ == 10:
                 localctx = LatteParser.SexprContext(self, localctx)
-                self.enterOuterAlt(localctx, 8)
-                self.state = 106
+                self.enterOuterAlt(localctx, 10)
+                self.state = 102
                 self.expr(0)
+                self.state = 103
+                self.match(LatteParser.T__6)
                 pass
 
 
@@ -945,10 +948,10 @@ class LatteParser ( Parser ):
     def vtype(self):
 
         localctx = LatteParser.VtypeContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 14, self.RULE_vtype)
+        self.enterRule(localctx, 12, self.RULE_vtype)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 109
+            self.state = 107
             self.match(LatteParser.IDENT)
         except RecognitionException as re:
             localctx.exception = re
@@ -1337,20 +1340,20 @@ class LatteParser ( Parser ):
         _parentState = self.state
         localctx = LatteParser.ExprContext(self, self._ctx, _parentState)
         _prevctx = localctx
-        _startState = 16
-        self.enterRecursionRule(localctx, 16, self.RULE_expr, _p)
+        _startState = 14
+        self.enterRecursionRule(localctx, 14, self.RULE_expr, _p)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 134
+            self.state = 132
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,12,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,11,self._ctx)
             if la_ == 1:
                 localctx = LatteParser.EidenContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
 
-                self.state = 112
+                self.state = 110
                 self.match(LatteParser.IDENT)
                 pass
 
@@ -1358,7 +1361,7 @@ class LatteParser ( Parser ):
                 localctx = LatteParser.EintvContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 113
+                self.state = 111
                 self.match(LatteParser.INT)
                 pass
 
@@ -1366,7 +1369,7 @@ class LatteParser ( Parser ):
                 localctx = LatteParser.EstrvContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 114
+                self.state = 112
                 self.match(LatteParser.Strval)
                 pass
 
@@ -1374,7 +1377,7 @@ class LatteParser ( Parser ):
                 localctx = LatteParser.EfalsContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 115
+                self.state = 113
                 self.match(LatteParser.T__13)
                 pass
 
@@ -1382,7 +1385,7 @@ class LatteParser ( Parser ):
                 localctx = LatteParser.EtrueContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 116
+                self.state = 114
                 self.match(LatteParser.T__14)
                 pass
 
@@ -1390,31 +1393,31 @@ class LatteParser ( Parser ):
                 localctx = LatteParser.EcallContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 117
+                self.state = 115
                 self.match(LatteParser.IDENT)
-                self.state = 118
+                self.state = 116
                 self.match(LatteParser.T__0)
-                self.state = 127
+                self.state = 125
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.Strval) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT))) != 0):
-                    self.state = 119
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.Strval))) != 0):
+                    self.state = 117
                     self.expr(0)
-                    self.state = 124
+                    self.state = 122
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     while _la==LatteParser.T__1:
-                        self.state = 120
+                        self.state = 118
                         self.match(LatteParser.T__1)
-                        self.state = 121
+                        self.state = 119
                         self.expr(0)
-                        self.state = 126
+                        self.state = 124
                         self._errHandler.sync(self)
                         _la = self._input.LA(1)
 
 
 
-                self.state = 129
+                self.state = 127
                 self.match(LatteParser.T__2)
                 pass
 
@@ -1422,9 +1425,9 @@ class LatteParser ( Parser ):
                 localctx = LatteParser.EminuContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 130
+                self.state = 128
                 self.match(LatteParser.SUB)
-                self.state = 131
+                self.state = 129
                 self.expr(7)
                 pass
 
@@ -1432,109 +1435,109 @@ class LatteParser ( Parser ):
                 localctx = LatteParser.EnegaContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
-                self.state = 132
+                self.state = 130
                 self.match(LatteParser.T__15)
-                self.state = 133
+                self.state = 131
                 self.expr(6)
                 pass
 
 
             self._ctx.stop = self._input.LT(-1)
-            self.state = 153
+            self.state = 151
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,14,self._ctx)
+            _alt = self._interp.adaptivePredict(self._input,13,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
                     if self._parseListeners is not None:
                         self.triggerExitRuleEvent()
                     _prevctx = localctx
-                    self.state = 151
+                    self.state = 149
                     self._errHandler.sync(self)
-                    la_ = self._interp.adaptivePredict(self._input,13,self._ctx)
+                    la_ = self._interp.adaptivePredict(self._input,12,self._ctx)
                     if la_ == 1:
                         localctx = LatteParser.EmultContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 136
+                        self.state = 134
                         if not self.precpred(self._ctx, 5):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
-                        self.state = 137
+                        self.state = 135
                         _la = self._input.LA(1)
                         if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.MUL) | (1 << LatteParser.DIV) | (1 << LatteParser.MOD))) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 138
+                        self.state = 136
                         self.expr(6)
                         pass
 
                     elif la_ == 2:
                         localctx = LatteParser.EaddContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 139
+                        self.state = 137
                         if not self.precpred(self._ctx, 4):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
-                        self.state = 140
+                        self.state = 138
                         _la = self._input.LA(1)
                         if not(_la==LatteParser.ADD or _la==LatteParser.SUB):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 141
+                        self.state = 139
                         self.expr(5)
                         pass
 
                     elif la_ == 3:
                         localctx = LatteParser.EcompContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 142
+                        self.state = 140
                         if not self.precpred(self._ctx, 3):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
-                        self.state = 143
+                        self.state = 141
                         _la = self._input.LA(1)
                         if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.LT) | (1 << LatteParser.LE) | (1 << LatteParser.GT) | (1 << LatteParser.GE) | (1 << LatteParser.EQ) | (1 << LatteParser.NE))) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 144
+                        self.state = 142
                         self.expr(4)
                         pass
 
                     elif la_ == 4:
                         localctx = LatteParser.EandContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 145
+                        self.state = 143
                         if not self.precpred(self._ctx, 2):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
-                        self.state = 146
+                        self.state = 144
                         self.match(LatteParser.T__16)
-                        self.state = 147
+                        self.state = 145
                         self.expr(2)
                         pass
 
                     elif la_ == 5:
                         localctx = LatteParser.EorContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 148
+                        self.state = 146
                         if not self.precpred(self._ctx, 1):
                             from antlr4.error.Errors import FailedPredicateException
                             raise FailedPredicateException(self, "self.precpred(self._ctx, 1)")
-                        self.state = 149
+                        self.state = 147
                         self.match(LatteParser.T__17)
-                        self.state = 150
+                        self.state = 148
                         self.expr(1)
                         pass
 
              
-                self.state = 155
+                self.state = 153
                 self._errHandler.sync(self)
-                _alt = self._interp.adaptivePredict(self._input,14,self._ctx)
+                _alt = self._interp.adaptivePredict(self._input,13,self._ctx)
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1549,7 +1552,7 @@ class LatteParser ( Parser ):
     def sempred(self, localctx:RuleContext, ruleIndex:int, predIndex:int):
         if self._predicates == None:
             self._predicates = dict()
-        self._predicates[8] = self.expr_sempred
+        self._predicates[7] = self.expr_sempred
         pred = self._predicates.get(ruleIndex, None)
         if pred is None:
             raise Exception("No predicate with index:" + str(ruleIndex))

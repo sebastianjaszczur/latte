@@ -34,11 +34,6 @@ class LatteVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LatteParser#assign.
-    def visitAssign(self, ctx:LatteParser.AssignContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by LatteParser#sbloc.
     def visitSbloc(self, ctx:LatteParser.SblocContext):
         return self.visitChildren(ctx)
@@ -56,6 +51,16 @@ class LatteVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LatteParser#sassi.
     def visitSassi(self, ctx:LatteParser.SassiContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LatteParser#sincr.
+    def visitSincr(self, ctx:LatteParser.SincrContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LatteParser#sdecr.
+    def visitSdecr(self, ctx:LatteParser.SdecrContext):
         return self.visitChildren(ctx)
 
 

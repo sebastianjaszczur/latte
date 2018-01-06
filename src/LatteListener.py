@@ -53,15 +53,6 @@ class LatteListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by LatteParser#assign.
-    def enterAssign(self, ctx:LatteParser.AssignContext):
-        pass
-
-    # Exit a parse tree produced by LatteParser#assign.
-    def exitAssign(self, ctx:LatteParser.AssignContext):
-        pass
-
-
     # Enter a parse tree produced by LatteParser#sbloc.
     def enterSbloc(self, ctx:LatteParser.SblocContext):
         pass
@@ -95,6 +86,24 @@ class LatteListener(ParseTreeListener):
 
     # Exit a parse tree produced by LatteParser#sassi.
     def exitSassi(self, ctx:LatteParser.SassiContext):
+        pass
+
+
+    # Enter a parse tree produced by LatteParser#sincr.
+    def enterSincr(self, ctx:LatteParser.SincrContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#sincr.
+    def exitSincr(self, ctx:LatteParser.SincrContext):
+        pass
+
+
+    # Enter a parse tree produced by LatteParser#sdecr.
+    def enterSdecr(self, ctx:LatteParser.SdecrContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#sdecr.
+    def exitSdecr(self, ctx:LatteParser.SdecrContext):
         pass
 
 

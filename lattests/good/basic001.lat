@@ -1,4 +1,12 @@
 int main() {
-	"asd";
-	return 0;
+	while( 3 == 2) {
+		int x = 3;
+		x = 2;
+		return x*f();
+		return;
+	}
+}
+
+int f() {
+	return;
 }

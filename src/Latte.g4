@@ -25,21 +25,17 @@ item
 	| IDENT '=' expr
 	;
 
-assign
-	: expr '=' expr
-	| expr '++'
-	| expr '--'
-	;
-
 stmt
 	: block # sbloc
 	| ';' # ssemi
 	| vtype item (',' item)* ';' # sdecl
-	| assign ';' # sassi
+	| expr '=' expr ';' # sassi
+	| expr '++' ';' # sincr
+	| expr '--' ';' # sdecr
 	| 'return' expr? ';' # sretu
 	| 'if' '(' expr ')' stmt ('else' stmt)? # sifel
 	| 'while' '(' expr ')' stmt # swhil
-	| expr #sexpr
+	| expr ';' #sexpr
 	;
 
 // types
@@ -82,15 +78,10 @@ GE : '>=' ;
 EQ : '==' ;
 NE : '!=' ;
 
-
-
 // comments, whitespace
 
 WS
 	: (' ' | '\r' | '\t' | '\n')+ ->  skip;
-
-CHAR : ~('/'|'"') | '//' | '/"';
-
 
 COMMENT_SL
 	: ('#' | '//') ~( '\r' | '\n' )* -> skip;
@@ -99,10 +90,6 @@ COMMENT_ML
 	: ('/*' ()* '*/') -> skip;
 
 // idents
-
-Strval
-	: '"' CHAR* '"'
-	;
 
 fragment Letter  : Capital | Small ;
 fragment Capital : [A-Z\u00C0-\u00D6\u00D8-\u00DE] ;
@@ -113,6 +100,9 @@ INT : Digit+ ;
 fragment ID_First : Letter | '_';
 IDENT : ID_First (ID_First | Digit)* ;
 
+Strval
+	: '"' CHAR '"'
+	;
 
-
+CHAR : ~('/'|'"') | '//' | '/"';
 
