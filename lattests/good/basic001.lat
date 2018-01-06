@@ -1,12 +1,13 @@
 int main() {
-	while( 3 == 2) {
-		int x = 3;
-		x = 2;
-		return x*f();
-		return;
-	}
+	return 3;
 }
 
 int f() {
-	return;
+	int x = 3;
+	int y = 5;
+	if(3 == 4)
+		x = y;
+	else
+		x = 0;
+	return x;
 }

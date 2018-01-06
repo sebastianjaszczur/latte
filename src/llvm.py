@@ -169,7 +169,7 @@ class LLVMVisitor(LatteVisitor):
 
     def visitSretu(self, ctx: LatteParser.SretuContext):
         # TODO: Type-checking
-        # TODO: Cheking if everywhere we have return.
+        # TODO: Checking if everywhere we have return.
         if ctx.expr():
             rexpr = self.visit(ctx.expr())
             return SReturn(rexpr)
@@ -351,8 +351,18 @@ def generate_ll(sourcefile, outputfile):
     print_parse_tree(tree)
     print()
 
+    print("Visiting")
+    program = LLVMVisitor().visit(tree)
+    print(program)  # , file=outputfile)
+    print()
+
+    print("CODE")
+    for function in program.functions.values():
+        print(function.get_source(program))
+        print()
+
     # print(BEFORE)#, file=outputfile)
-    print(LLVMVisitor().visit(tree))  # , file=outputfile)
+    # print code
     # print(AFTER)#, file=outputfile)
 
 
