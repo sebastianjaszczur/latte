@@ -1,7 +1,8 @@
 int main() {
-	return f(3);
+	f();
+	return 3;
 }
 
-int f(int x) {
-	return x*x;
+void f() {
+	return;
 }

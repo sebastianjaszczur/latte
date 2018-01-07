@@ -127,7 +127,7 @@ class LLVMVisitor(LatteVisitor):
         if not texpr.vtype.is_int():
             raise ValueError("Only int supported for incr/decr")
         vexpr = EOp(VInt(), self.visit(ctx.expr()),
-                    EConst(self.program.name_to_type('int'), 1), op)
+                    EConst(VInt(), 1), op)
         return SAssi(texpr, vexpr)
 
     def visitSassi(self, ctx: LatteParser.SassiContext):
@@ -208,7 +208,7 @@ class LLVMVisitor(LatteVisitor):
 
     def visitEstrv(self, ctx: LatteParser.EstrvContext):
         # TODO: fix strings
-        raise TypeError("Strings are not handled well.")
+        raise NotImplementedError("String constants are not implemented.")
 
     def visitEadd(self, ctx: LatteParser.EaddContext):
         if ctx.ADD():

@@ -3,6 +3,10 @@ from typing import List
 # Types
 BOOL = 'i1'
 INT = 'i32'
+STRING = 'i8*'
+VOID = 'void'
+
+INTERNAL_REF_SIGN = '&'
 
 # Operators
 MUL = '*'
@@ -65,6 +69,13 @@ def op_array(op: str, vtype1: 'VType', vtype2: 'VType'=None) -> (str, 'VType'):
             return SPECIAL, VBool()
         elif op == OR:
             return SPECIAL, VBool()
+    elif vtype1.is_string():
+        if op == ADD:
+            return 'call i8* @op_addString(i8* {}, i8* {})', VString()
+        elif op == EQ:
+            return SPECIAL, VBool()
+        elif op == NE:
+            return SPECIAL, VBool()
     # Other
     raise ValueError("Op not allowed: {} {} {}"
                      .format(vtype1.name, op, vtype2.name))
@@ -97,7 +108,7 @@ class VType(object):
     def __eq__(self, other):
         if not isinstance(other, VType):
             return False
-        return str(self.name).rstrip("*") == str(other.name).rstrip("*")
+        return self.unref().name == other.unref().name
 
     def __ne__(self, other):
         return not (self == other)
@@ -117,6 +128,9 @@ class VType(object):
     def is_void(self):
         return self == VVoid()
 
+    def is_intboolstring(self):
+        return self.is_int() or self.is_bool() or self.is_string()
+
     def llvm_type(self):
         raise NotImplementedError()
 
@@ -133,19 +147,10 @@ class VRef(VType):
             # No references to references.
             vtype = vtype.unref()
         self.vtype = vtype
-        self.name = vtype.name + "*"
+        self.name = vtype.name + INTERNAL_REF_SIGN
 
     def unref(self):
         return self.vtype.unref()
-
-    def is_bool(self):
-        return self.vtype.is_bool()
-
-    def is_int(self):
-        return self.vtype.is_int()
-
-    def is_string(self):
-        return self.vtype.is_string()
 
     def llvm_type(self):
         return self.llvm_type() + "*"
@@ -181,6 +186,10 @@ class VClass(VType):
             return BOOL
         elif self.is_int():
             return INT
+        elif self.is_void():
+            return VOID
+        elif self.is_string():
+            return STRING
         else:
             raise NotImplementedError()
 
@@ -218,8 +227,7 @@ class Expr(object):
             next_code_block: 'CodeBlock' = None) -> List['CodeBlock']:
         code_lines = self.get_code_lines(program)
         if next_code_block:
-            next_label = next_code_block.get_label_name()
-            code_lines.append(CodeLine("br label %{}".format(next_label)))
+            code_lines.extend(br_block(next_code_block))
         return [CodeBlock(code_lines, comment="expr")]
 
 
@@ -238,6 +246,8 @@ class EConst(Expr):
             code_line = CodeLine("add i32 0, {}".format(self.value))
         elif self.vtype.is_bool():
             code_line = CodeLine("add i1 0, {}".format(int(self.value)))
+        elif self.vtype.is_string():
+            raise NotImplementedError("string constants not implemented")
         else:
             raise ValueError(
                 "Type {} not supported for assignment".format(type))
@@ -245,12 +255,10 @@ class EConst(Expr):
 
 
 def load_address(program, vtype: VType, register: str) -> 'CodeLine':
-    if vtype.is_int():
+    if vtype.is_intboolstring():
         code_line = CodeLine(
-            "load i32, i32* {}".format(register))
-    elif vtype.is_bool():
-        code_line = CodeLine(
-            "load i1, i1* {}".format(register))
+            "load {type}, {type}* {reg}".format(reg=register,
+                                                type=vtype.llvm_type()))
     else:
         raise ValueError(
             "Type {} not supported for loading".format(type))
@@ -338,10 +346,11 @@ class ECall(Expr):
             assert isinstance(argtype, VType)
             arg_strings.append("{} {}".format(argtype.llvm_type(), argval))
 
+        rtype = self.vtype
         call_line = CodeLine("call {rtype} @{name}({args})".format(
-            rtype=self.vtype.llvm_type(), name=self.name,
+            rtype=rtype.llvm_type(), name=self.name,
             args=", ".join(arg_strings)
-        ))
+        ), save_result=(not rtype.is_void()))
         return code_lines + [call_line]
 
 
@@ -418,10 +427,7 @@ class Program(object):
         if name in self.types:
             return self.types[name]
 
-        if name.endswith("*"):
-            base = VType.name_to_type(name[:-1])
-            self.types[name] = VRef(base)
-        elif name.endswith("[]"):
+        if name.endswith("[]"):
             base = VType.name_to_type(name[:-2])
             self.types[name] = VList(base)
         else:
@@ -503,12 +509,10 @@ class SAssi(Stmt):
         v_val = v_code_lines[-1].get_var_name()
 
         vtype = self.vexpr.vtype.unref()
-        if vtype.is_int():
-            s_code_line = CodeLine("store i32 {}, i32* {}".format(v_val, t_var),
-                                   save_result=False)
-        elif vtype.is_bool():
-            s_code_line = CodeLine("store i1 {}, i1* {}".format(v_val, t_var),
-                                   save_result=False)
+        if vtype.is_intboolstring():
+            s_code_line = CodeLine("store {type} {val}, {type}* {tar}".format(
+                val=v_val, tar=t_var, type=vtype.llvm_type()),
+                save_result=False)
         else:
             raise ValueError(
                 "Type {} not supported for assignment".format(vtype))
@@ -562,7 +566,7 @@ class SIfElse(Stmt):
             end_blocks = [end_block]
 
         # Concatenation and return
-        code_blocks = [cond_block] + true_blocks + false_blocks
+        code_blocks = [cond_block] + true_blocks + false_blocks + end_blocks
         return code_blocks
 
 
@@ -632,10 +636,9 @@ class SReturn(Stmt):
             codelines = self.expr.get_code_lines(program)
             vname = codelines[-1].get_var_name()
             vtype = self.expr.vtype
-            if vtype.is_int():
-                rline = "ret i32 {}".format(vname)
-            elif vtype.is_bool():
-                rline = "ret i1 {}".format(vname)
+            if vtype.is_intboolstring():
+                rline = "ret {type} {name}".format(name=vname,
+                                                   type=vtype.llvm_type())
             else:
                 raise NotImplementedError("Type not supproted")
             codelines.append(CodeLine(rline, save_result=False))
@@ -650,7 +653,7 @@ class CodeBlock(object):
         self.codelines = codelines
         self.uid = UID.get_uid()
         self.ending = ending
-        self.comment = ("  // " + comment) if comment else ""
+        self.comment = ("  ; " + comment) if comment else ""
 
     def get_label_name(self):
         return "L{}".format(self.uid)
@@ -715,24 +718,15 @@ class Block(Stmt):
         for varname in self.vars.vars:
             block_varname = self.vars.get_variable_name(varname)
             vtype = self.vars.vars[varname]
-            if vtype.is_int():
-                init_codelines.append(
-                    CodeLine("{} = alloca i32".format(block_varname),
-                             save_result=False))
+            if vtype.is_intboolstring():
+                init_codelines.append(CodeLine("{var} = alloca {type}".format(
+                    var=block_varname,type=vtype.llvm_type()),
+                    save_result=False))
                 if varname in self.vars.arguments:
-                    init_codelines.append(
-                        CodeLine("store i32 %{}, i32* {}".format(varname,
-                                                                 block_varname),
-                                 save_result=False))
-            elif vtype.is_bool():
-                init_codelines.append(
-                    CodeLine("{} = alloca i1".format(block_varname),
-                             save_result=False))
-                if varname in self.vars.arguments:
-                    init_codelines.append(
-                        CodeLine("store i1 %{}, i1* {}".format(varname,
-                                                               block_varname),
-                                 save_result=False))
+                    init_codelines.append(CodeLine(
+                        "store {type} %{var}, {type}* {b_var}".format(
+                            var=varname, b_var=block_varname,
+                            type=vtype.llvm_type()), save_result=False))
             else:
                 raise NotImplementedError(
                     "Type {} of {} unavailable for init".format(vtype, varname))
@@ -765,10 +759,8 @@ class Function(object):
         arg_strings = []
         for argname in self.block.vars.arguments:
             vtype = self.block.vars.get_variable(argname)
-            if vtype.is_int():
-                arg_strings.append('i32 %{}'.format(argname))
-            elif vtype.is_bool():
-                arg_strings.append('i1 %{}'.format(argname))
+            if vtype.is_intboolstring():
+                arg_strings.append('{} %{}'.format(vtype.llvm_type(), argname))
             else:
                 raise NotImplementedError("Type {} of {} not supported yet."
                                           .format(vtype.name, argname))
