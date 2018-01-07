@@ -8,7 +8,8 @@ from LatteParser import LatteParser
 from LatteVisitor import LatteVisitor
 from typedtree import Program, VFun, VariablesBlock, Block, Function, Stmt, \
     Expr, EConst, EOp, ECall, EVar, VRef, SAssi, EmptyStmt, SIfElse, SWhile, \
-    SReturn
+    SReturn, VInt, VBool, VString, ADD, SUB, op_array, MUL, DIV, MOD, AND, OR, \
+    LT, LE, GT, GE, EQ, NE
 
 # TODO: Better error handling
 
@@ -72,7 +73,7 @@ class LLVMVisitor(LatteVisitor):
             args.add_variable(
                 str(arg.IDENT()),
                 self.program.name_to_type(str(arg.vtype().IDENT())),
-                declare=True)
+                declare=True, argument=True)
 
         block = self.visitBlock(ctx.block(), args)
         function = Function(name, block)
@@ -112,21 +113,19 @@ class LLVMVisitor(LatteVisitor):
         return self.visit(ctx.block())
 
     def visitSincr(self, ctx: LatteParser.SincrContext):
-        return self.visitDecrIncr(ctx, '+')
+        return self.visitDecrIncr(ctx, ADD)
 
     def visitSdecr(self, ctx: LatteParser.SdecrContext):
-        return self.visitDecrIncr(ctx, '-')
+        return self.visitDecrIncr(ctx, SUB)
 
-    def visitDecrIncr(self, ctx, plusminus: str):
+    def visitDecrIncr(self, ctx, op: str):
         texpr = self.visit(ctx.expr())
         if not isinstance(texpr.vtype, VRef):
             raise ValueError("Invalid incr/decr target.")
-        if self.program.name_to_type('int') != texpr.vtype:
+        if not texpr.vtype.is_int():
             raise ValueError("Only int supported for incr/decr")
-        vexpr = EOp(self.program.name_to_type('int'),
-                    self.visit(ctx.expr()),
-                    EConst(self.program.name_to_type('int'), 1),
-                    plusminus)
+        vexpr = EOp(VInt(), self.visit(ctx.expr()),
+                    EConst(self.program.name_to_type('int'), 1), op)
         return SAssi(texpr, vexpr)
 
     def visitSassi(self, ctx: LatteParser.SassiContext):
@@ -146,7 +145,7 @@ class LLVMVisitor(LatteVisitor):
                 vexpr = self.visit(expr)
             else:
                 vexpr = vtype.get_default_expr()
-            texpr = EVar(name, VRef(vtype))
+            texpr = EVar(self.program.last_vars.get_variable_name(name), VRef(vtype))
             if not isinstance(texpr.vtype, VRef):
                 raise ValueError("Invalid declaration target.")
             tstmts.append(SAssi(texpr, vexpr))
@@ -157,8 +156,9 @@ class LLVMVisitor(LatteVisitor):
         return self.visit(ctx.expr())
 
     def visitSifel(self, ctx: LatteParser.SifelContext):
+        #TODO: ban declaration without enclosing block
         condition = self.visit(ctx.expr())
-        if condition.vtype != self.program.name_to_type('boolean'):
+        if not condition.vtype.is_bool():
             raise ValueError("Invalid condition type")
         ifstmt = self.visit(ctx.stmt(0))
         if ctx.stmt(1):
@@ -181,22 +181,22 @@ class LLVMVisitor(LatteVisitor):
 
     def visitSwhil(self, ctx: LatteParser.SwhilContext):
         condition = self.visit(ctx.expr())
-        if condition.vtype != self.program.name_to_type('boolean'):
+        if not condition.vtype.is_bool():
             raise ValueError("Invalid condition type")
         body = self.visit(ctx.stmt())
         return SWhile(condition, body)
 
     def visitEintv(self, ctx: LatteParser.EintvContext):
-        vtype = self.program.name_to_type('int')
+        vtype = VInt()
         val = int(str(ctx.INT()))
         return EConst(vtype, val)
 
     def visitEtrue(self, ctx: LatteParser.EtrueContext):
-        vtype = self.program.name_to_type('boolean')
+        vtype = VBool()
         return EConst(vtype, True)
 
     def visitEfals(self, ctx: LatteParser.EfalsContext):
-        vtype = self.program.name_to_type('boolean')
+        vtype = VBool()
         return EConst(vtype, False)
 
     def visitEstrv(self, ctx: LatteParser.EstrvContext):
@@ -205,82 +205,66 @@ class LLVMVisitor(LatteVisitor):
 
     def visitEadd(self, ctx: LatteParser.EaddContext):
         if ctx.ADD():
-            op = "+"
+            op = ADD
         elif ctx.SUB():
-            op = "-"
+            op = SUB
         else:
             raise NameError("Unknown operator.")
         lexpr = self.visit(ctx.expr(0))
         rexpr = self.visit(ctx.expr(1))
-        if lexpr.vtype == rexpr.vtype == self.program.name_to_type('int'):
-            vtype = self.program.name_to_type('int')
-        elif (lexpr.vtype == rexpr.vtype == self.program.name_to_type('string')
-              and op == "+"):
-            vtype = self.program.name_to_type('string')
-        else:
-            raise NameError("Wrong types")
+        _, vtype = op_array(op, lexpr.vtype, rexpr.vtype)
         return EOp(vtype, lexpr, rexpr, op)
 
     def visitEmult(self, ctx: LatteParser.EmultContext):
         if ctx.MUL():
-            op = "*"
+            op = MUL
         elif ctx.DIV():
-            op = "/"
+            op = DIV
         elif ctx.MOD():
-            op = "%"
+            op = MOD
         else:
             raise NameError("Unknown operator.")
         lexpr = self.visit(ctx.expr(0))
         rexpr = self.visit(ctx.expr(1))
-        if lexpr.vtype == rexpr.vtype == self.program.name_to_type('int'):
-            vtype = self.program.name_to_type('int')
-        else:
-            raise NameError("Wrong types")
+        _, vtype = op_array(op, lexpr.vtype, rexpr.vtype)
         return EOp(vtype, lexpr, rexpr, op)
 
     def visitEand(self, ctx: LatteParser.EandContext):
-        op = "&&"
+        # TODO: conditions should be lazy
+        op = AND
         lexpr = self.visit(ctx.expr(0))
         rexpr = self.visit(ctx.expr(1))
-        if lexpr.vtype == rexpr.vtype == self.program.name_to_type('boolean'):
-            vtype = self.program.name_to_type('boolean')
-        else:
-            raise NameError("Wrong types")
+        _, vtype = op_array(op, lexpr.vtype, rexpr.vtype)
         return EOp(vtype, lexpr, rexpr, op)
 
     def visitEor(self, ctx: LatteParser.EandContext):
-        op = "||"
+        # TODO: conditions should be lazy
+        op = OR
         lexpr = self.visit(ctx.expr(0))
         rexpr = self.visit(ctx.expr(1))
-        if lexpr.vtype == rexpr.vtype == self.program.name_to_type('boolean'):
-            vtype = self.program.name_to_type('boolean')
-        else:
-            raise NameError("Wrong types")
+        _, vtype = op_array(op, lexpr.vtype, rexpr.vtype)
         return EOp(vtype, lexpr, rexpr, op)
 
     def visitEcomp(self, ctx: LatteParser.EcompContext):
         # TODO: comparison of strings
         # TODO: comparison of bools?
         if ctx.LT():
-            op = "<"
+            op = LT
         elif ctx.LE():
-            op = "<="
+            op = LE
         elif ctx.GT():
-            op = ">"
+            op = GT
         elif ctx.GE():
-            op = ">="
+            op = GE
         elif ctx.EQ():
-            op = "=="
+            op = EQ
         elif ctx.NE():
-            op = "!="
+            op = NE
         else:
             raise NameError("Unknown operator.")
         lexpr = self.visit(ctx.expr(0))
         rexpr = self.visit(ctx.expr(1))
-        if lexpr.vtype == rexpr.vtype == self.program.name_to_type('int'):
-            vtype = self.program.name_to_type('boolean')
-        else:
-            raise NameError("Wrong types")
+        _, vtype = op_array(op, lexpr.vtype, rexpr.vtype)
         return EOp(vtype, lexpr, rexpr, op)
 
     def visitEcall(self, ctx: LatteParser.EcallContext):
@@ -303,7 +287,7 @@ class LLVMVisitor(LatteVisitor):
     def visitEiden(self, ctx: LatteParser.EidenContext):
         name = str(ctx.IDENT())
         vtype = self.program.last_vars.get_variable(name)
-        return EVar(name, VRef(vtype))
+        return EVar(self.program.last_vars.get_variable_name(name), VRef(vtype))
 
     def visitEminu(self, ctx: LatteParser.EminuContext):
         # TODO: onesided operators

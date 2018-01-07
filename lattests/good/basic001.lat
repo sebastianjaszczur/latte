@@ -1,13 +1,7 @@
 int main() {
-	return 3;
-}
-
-int f() {
-	int x = 3;
-	int y = 5;
-	if(3 == 4)
-		x = y;
-	else
-		x = 0;
-	return x;
+	boolean x = true;
+	while(x) {
+		x = false;
+	}
+	return 0;
 }
