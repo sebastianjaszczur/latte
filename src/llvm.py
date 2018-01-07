@@ -289,7 +289,7 @@ class LLVMVisitor(LatteVisitor):
             if arg.vtype != argtype:
                 raise ValueError("Wrong type of an argument to {}".format(name))
 
-        return ECall(name, rtype, args)
+        return ECall(name, rtype, argtypes, args)
 
     def visitEiden(self, ctx: LatteParser.EidenContext):
         name = str(ctx.IDENT())
@@ -350,6 +350,7 @@ def generate_ll(sourcefile, outputfile):
     print("CODE")
     for function in program.functions.values():
         print(function.get_source(program))
+        print()
         print()
 
     # print(BEFORE)#, file=outputfile)

@@ -220,7 +220,7 @@ class Expr(object):
         if next_code_block:
             next_label = next_code_block.get_label_name()
             code_lines.append(CodeLine("br label %{}".format(next_label)))
-        return [CodeBlock(code_lines)]
+        return [CodeBlock(code_lines, comment="expr")]
 
 
 class EConst(Expr):
@@ -316,9 +316,10 @@ class EOp(Expr):
 
 
 class ECall(Expr):
-    def __init__(self, name: str, vtype: VType, args: [Expr]):
+    def __init__(self, name: str, vtype: VType, argtypes: List[VType], args: List[Expr]):
         self.name = name
         self.vtype = vtype
+        self.argtypes = argtypes
         self.args = args
 
     def to_str(self, ident=0):
@@ -326,6 +327,22 @@ class ECall(Expr):
         for arg in self.args:
             ret += arg.to_str(ident + 2)
         return ret
+
+    def get_code_lines(self, program: 'Program', keep_ref=False)\
+            -> List['CodeLine']:
+        code_lines = []
+        arg_strings = []
+        for (arg, argtype) in zip(self.args, self.argtypes):
+            code_lines.extend(arg.get_code_lines(program))
+            argval = code_lines[-1].get_var_name()
+            assert isinstance(argtype, VType)
+            arg_strings.append("{} {}".format(argtype.llvm_type(), argval))
+
+        call_line = CodeLine("call {rtype} @{name}({args})".format(
+            rtype=self.vtype.llvm_type(), name=self.name,
+            args=", ".join(arg_strings)
+        ))
+        return code_lines + [call_line]
 
 
 class VariablesBlock(object):
@@ -462,7 +479,7 @@ class EmptyStmt(Stmt):
             self, program: Program,
             next_code_block: 'CodeBlock' = None) -> List['CodeBlock']:
         code_lines = (br_block(next_code_block))
-        return [CodeBlock(code_lines)]
+        return [CodeBlock(code_lines, comment="empty stmt")]
 
 
 class SAssi(Stmt):
@@ -501,7 +518,7 @@ class SAssi(Stmt):
 
         # Concatenation
         code_lines = t_code_lines + v_code_lines + [s_code_line] + br_lines
-        return [CodeBlock(code_lines)]
+        return [CodeBlock(code_lines, comment="assignment")]
 
 
 class SIfElse(Stmt):
@@ -523,7 +540,7 @@ class SIfElse(Stmt):
             next_code_block: 'CodeBlock' = None) -> List['CodeBlock']:
         # End block
         brlines = br_block(next_code_block)
-        end_block = CodeBlock(brlines)
+        end_block = CodeBlock(brlines, comment="end-if")
         
         # True blocks
         true_blocks = self.ifstmt.get_code_blocks(program, end_block)
@@ -535,7 +552,7 @@ class SIfElse(Stmt):
         cond_lines = self.cond.get_code_lines(program)
 
         brlines = cond_br_block(cond_lines[-1], true_blocks[0], false_blocks[0])
-        cond_block = CodeBlock(cond_lines + brlines, False)
+        cond_block = CodeBlock(cond_lines + brlines, False, comment="if")
 
         # Setting ending appropriately
         if true_blocks[-1].ending and false_blocks[-1].ending:
@@ -573,10 +590,10 @@ class SWhile(Stmt):
                 return []
         # End block
         brlines = br_block(next_code_block)
-        end_block = CodeBlock(brlines)
+        end_block = CodeBlock(brlines, comment="end-while")
 
         # It'll just jump to condition.
-        first_code_block = CodeBlock([])
+        first_code_block = CodeBlock([], comment="while")
 
         # Main body
         code_blocks = self.body.get_code_blocks(program, first_code_block)
@@ -585,7 +602,7 @@ class SWhile(Stmt):
         cond_lines = self.cond.get_code_lines(program)
 
         brlines = cond_br_block(cond_lines[-1], code_blocks[0], end_block)
-        cond_block = CodeBlock(cond_lines + brlines, False)
+        cond_block = CodeBlock(cond_lines + brlines, False, comment="cond-while")
 
         # Jumping to condition from first code block.
         br_cond_lines = br_block(cond_block)
@@ -624,21 +641,22 @@ class SReturn(Stmt):
             codelines.append(CodeLine(rline, save_result=False))
         else:
             codelines = [CodeLine("ret void", save_result=False)]
-        code_block = CodeBlock(codelines, ending=True)
+        code_block = CodeBlock(codelines, ending=True, comment="return")
         return [code_block]
 
 
 class CodeBlock(object):
-    def __init__(self, codelines: ['CodeLine'], ending=False):
+    def __init__(self, codelines: ['CodeLine'], ending=False, comment=None):
         self.codelines = codelines
         self.uid = UID.get_uid()
         self.ending = ending
+        self.comment = ("  // " + comment) if comment else ""
 
     def get_label_name(self):
         return "L{}".format(self.uid)
 
     def get_source(self):
-        source_lines = ["  {}:".format(self.get_label_name())]
+        source_lines = ["  {}:{}".format(self.get_label_name(), self.comment)]
         for codeline in self.codelines:
             source_lines.append("    " + codeline.code)
         return "\n".join(source_lines)
@@ -720,7 +738,7 @@ class Block(Stmt):
                     "Type {} of {} unavailable for init".format(vtype, varname))
         if code_blocks:
             init_codelines.extend(br_block(code_blocks[0]))
-        init_block = CodeBlock(init_codelines)
+        init_block = CodeBlock(init_codelines, comment="init")
         return [init_block] + code_blocks
 
 
@@ -755,14 +773,18 @@ class Function(object):
                 raise NotImplementedError("Type {} of {} not supported yet."
                                           .format(vtype.name, argname))
 
-        source_lines = [
-            "define void @{}({}){{".format(self.name, ", ".join(arg_strings)),
+        rtype = program.last_vars.get_variable(self.name).rtype.llvm_type()
+
+        begin_lines = [
+            "define {} @{}({}){{".format(rtype, self.name,
+                                         ", ".join(arg_strings)),
         ]
 
-        end_source_lines = [
+        end_lines = [
             "}"
         ]
 
-        for code_block in code_blocks:
-            source_lines.append(code_block.get_source())
-        return "\n".join(source_lines + end_source_lines)
+        block_lines = "\n\n".join(
+            [code_block.get_source() for code_block in code_blocks])
+
+        return "\n".join(begin_lines + [block_lines] + end_lines)
