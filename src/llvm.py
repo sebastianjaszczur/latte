@@ -75,7 +75,9 @@ class LLVMVisitor(LatteVisitor):
                 self.program.name_to_type(str(arg.vtype().IDENT())),
                 declare=True, argument=True)
 
+        self.program.current_function = name
         block = self.visitBlock(ctx.block(), args)
+        self.program.current_function = None
         function = Function(name, block)
 
         self.program.functions[name] = function
@@ -168,13 +170,18 @@ class LLVMVisitor(LatteVisitor):
         return SIfElse(condition, ifstmt, elsestmt)
 
     def visitSretu(self, ctx: LatteParser.SretuContext):
-        # TODO: Type-checking
-        # TODO: Checking if everywhere we have return.
+        funtype = self.program.last_vars.get_variable(
+            self.program.current_function)
+        assert isinstance(funtype, VFun)
+        rtype = funtype.rtype
+        print("Waaat", ctx.expr(), rtype)
         if ctx.expr():
             rexpr = self.visit(ctx.expr())
-            return SReturn(rexpr)
-        else:
+            if rexpr.vtype == rtype:
+                return SReturn(rexpr)
+        elif rtype.is_void():
             return SReturn()
+        raise ValueError("Invalid return statement")
 
     def visitSsemi(self, ctx: LatteParser.SsemiContext):
         return EmptyStmt()

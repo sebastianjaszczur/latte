@@ -106,13 +106,16 @@ class VType(object):
         return self
 
     def is_bool(self):
-        return False
+        return self == VBool()
 
     def is_int(self):
-        return False
+        return self == VInt()
 
     def is_string(self):
-        return False
+        return self == VString()
+
+    def is_void(self):
+        return self == VVoid()
 
     def llvm_type(self):
         raise NotImplementedError()
@@ -173,15 +176,6 @@ class VClass(VType):
         else:
             raise NotImplementedError()
 
-    def is_bool(self):
-        return self == VBool()
-
-    def is_int(self):
-        return self == VInt()
-
-    def is_string(self):
-        return self == VString()
-
     def llvm_type(self):
         if self.is_bool():
             return BOOL
@@ -203,6 +197,10 @@ def VString():
     return VClass('string')
 
 
+def VVoid():
+    return VClass('void')
+
+
 class Expr(object):
     def __init__(self, vtype: VType):
         self.vtype = vtype
@@ -211,9 +209,9 @@ class Expr(object):
         ret = " " * ident + "Expr\n"
         return ret
 
-    def get_code_lines(self, program: 'Program', keep_ref=False) -> List['CodeLine']:
-        return [CodeLine("Generic code line", save_result=True)]
-        # raise NotImplementedError
+    def get_code_lines(self, program: 'Program', keep_ref=False)\
+            -> List['CodeLine']:
+        raise NotImplementedError()
 
     def get_code_blocks(
             self, program: 'Program',
@@ -234,7 +232,8 @@ class EConst(Expr):
         ret = " " * ident + "const {}:{}\n".format(self.value, self.vtype)
         return ret
 
-    def get_code_lines(self, program: 'Program', keep_ref=False) -> List['CodeLine']:
+    def get_code_lines(self, program: 'Program', keep_ref=False)\
+            -> List['CodeLine']:
         if self.vtype.is_int():
             code_line = CodeLine("add i32 0, {}".format(self.value))
         elif self.vtype.is_bool():
@@ -267,7 +266,8 @@ class EVar(Expr):
         ret = " " * ident + "var {}:{}\n".format(self.name, self.vtype)
         return ret
 
-    def get_code_lines(self, program: 'Program', keep_ref=False) -> List['CodeLine']:
+    def get_code_lines(self, program: 'Program', keep_ref=False)\
+            -> List['CodeLine']:
         vtype_unref = self.vtype.unref()
         if vtype_unref.is_int():
             code_line = CodeLine(
@@ -298,6 +298,21 @@ class EOp(Expr):
         ret += self.lexpr.to_str(ident + 2)
         ret += self.rexpr.to_str(ident + 2)
         return ret
+
+    def get_code_lines(self, program: 'Program', keep_ref=False)\
+            -> List['CodeLine']:
+        l_code_lines = self.lexpr.get_code_lines(program)
+        lval = l_code_lines[-1].get_var_name()
+        r_code_lines = self.rexpr.get_code_lines(program)
+        rval = r_code_lines[-1].get_var_name()
+        code_lines = l_code_lines + r_code_lines
+
+        instr, vtype = op_array(self.op, self.lexpr.vtype, self.rexpr.vtype)
+        if instr == SPECIAL:
+            raise NotImplementedError()
+        else:
+            code_lines.append(CodeLine(instr.format(lval, rval)))
+        return code_lines
 
 
 class ECall(Expr):
@@ -332,7 +347,7 @@ class VariablesBlock(object):
         if declare:
             self.declare(name)
 
-    def get_variable(self, name: str):
+    def get_variable(self, name: str) -> VType:
         if name in self.vars:
             if name in self.declared:
                 return self.vars[name]
@@ -380,6 +395,7 @@ class Program(object):
         self.globals = VariablesBlock()
         self.last_vars = self.globals
         self.functions = dict()
+        self.current_function = None
 
     def name_to_type(self, name: str) -> VType:
         if name in self.types:
@@ -513,7 +529,7 @@ class SIfElse(Stmt):
         true_blocks = self.ifstmt.get_code_blocks(program, end_block)
 
         # False blocks
-        false_blocks = self.ifstmt.get_code_blocks(program, end_block)
+        false_blocks = self.elsestmt.get_code_blocks(program, end_block)
 
         # Cond block
         cond_lines = self.cond.get_code_lines(program)
@@ -522,10 +538,14 @@ class SIfElse(Stmt):
         cond_block = CodeBlock(cond_lines + brlines, False)
 
         # Setting ending appropriately
-        end_block.ending = true_blocks[-1].ending and false_blocks[-1].ending
+        if true_blocks[-1].ending and false_blocks[-1].ending:
+            # If those blocks are ending, false block will indicate this.
+            end_blocks = []
+        else:
+            end_blocks = [end_block]
 
         # Concatenation and return
-        code_blocks = [cond_block] + true_blocks + false_blocks + [end_block]
+        code_blocks = [cond_block] + true_blocks + false_blocks
         return code_blocks
 
 
@@ -698,7 +718,8 @@ class Block(Stmt):
             else:
                 raise NotImplementedError(
                     "Type {} of {} unavailable for init".format(vtype, varname))
-        init_codelines.extend(br_block(code_blocks[0]))
+        if code_blocks:
+            init_codelines.extend(br_block(code_blocks[0]))
         init_block = CodeBlock(init_codelines)
         return [init_block] + code_blocks
 
@@ -716,8 +737,12 @@ class Function(object):
     def get_code_blocks(self, program: Program) -> List['CodeBlock']:
         return self.block.get_code_blocks(program)
 
-    def get_source(self, program):
+    def get_source(self, program: Program):
         code_blocks = self.get_code_blocks(program)
+        if not program.last_vars.get_variable(self.name).rtype.is_void():
+            if (not code_blocks) or (not code_blocks[-1].ending):
+                raise ValueError("Function {} doesn't have return.".format(
+                    self.name))
 
         arg_strings = []
         for argname in self.block.vars.arguments:
