@@ -201,6 +201,8 @@ class EOp(Expr):
                 code_lines = []
                 code_lines.extend(l_code_lines)
                 uid = UID.get_uid()
+                code_lines.append(CodeLine('br label %ISLAZY{}'.format(uid),
+                                           save_result=False))
                 code_lines.append(CodeLine("ISLAZY{}:".format(uid),
                                            save_result=False))
                 if self.op == OR:

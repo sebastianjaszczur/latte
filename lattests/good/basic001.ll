@@ -8,21 +8,22 @@ declare i32 @op_eqString(i8*, i8*)
 declare i32 @op_neString(i8*, i8*)
 
 define i32 @f_main() {
-  L22:  ; init
+  L23:  ; init
     %b2_x = alloca i1
-    br label %L19
+    br label %L20
 
-  L19:  ; assignment
+  L20:  ; assignment
     %v7 = getelementptr  i1, i1* %b2_x, i32 0
     %v8 = add i1 0, 1
+    br label %ISLAZY10
     ISLAZY10:
     br i1 %v8, label %LAZY10, label %WORK10
     WORK10:
     %v9 = add i1 0, 0
     br label %LAZY10
     LAZY10:
-    %v16 = phi i1 [%v8, %ISLAZY10], [%v9, %WORK10]
-    store i1 %v16, i1* %v7
+    %v17 = phi i1 [%v8, %ISLAZY10], [%v9, %WORK10]
+    store i1 %v17, i1* %v7
     br label %L6
 
   L6:  ; return
