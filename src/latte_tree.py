@@ -575,6 +575,7 @@ class SWhile(Stmt):
                 brlines = br_block(code_blocks[0])
                 code_blocks[-1].codelines.extend(brlines)
                 code_blocks[-1].ending = True  # It never returns, so it's OK.
+                return code_blocks
             else:
                 return []
         # End block
