@@ -1,3 +1,5 @@
+from antlr4.error.ErrorListener import ErrorListener
+
 import latte_tree
 
 BOOL = 'i1'
@@ -10,6 +12,8 @@ DIV = '/'
 MOD = '%'
 ADD = '+'
 SUB = '-'
+NEG = '!'
+
 LT = '<'
 LE = '<='
 GT = '>'
@@ -32,12 +36,26 @@ class UID(object):
         return UID.last_uid
 
 
-class TypeNotFound(BaseException):
-    def __init__(self, name):
-        self.name = name
+class CompilationError(Exception):
+    def __init__(self, msg, ctx):
+        if ctx is None:
+            self.line = 0
+            self.column = 0
+            self.text = ""
+        else:
+            self.line = ctx.start.line
+            self.column = ctx.start.column
+            self.text = ctx.getText()
+        self.msg = msg
 
     def __str__(self):
-        return "Type not found: {}".format(self.name)
+        return "line {}:{} {}:\n{}".format(
+            self.line, self.column, self.msg, self.text)
+
+
+class ErrorRaiser(ErrorListener):
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        raise CompilationError(line, column, msg)
 
 
 class VType(object):
@@ -77,12 +95,6 @@ class VType(object):
         raise NotImplementedError()
 
 
-class VList(VType):
-    def __init__(self, vtype: VType):
-        self.name = vtype.name + '[]'
-        self.vtype = vtype
-
-
 class VRef(VType):
     def __init__(self, vtype: VType):
         if isinstance(vtype, VRef):
@@ -115,11 +127,11 @@ class VClass(VType):
 
     def get_default_expr(self):
         if self.is_int():
-            return latte_tree.EConst(self, 0)
+            return latte_tree.EConst(self, 0, None)
         elif self.is_bool():
-            return latte_tree.EConst(self, False)
+            return latte_tree.EConst(self, False, None)
         elif self.is_string():
-            return latte_tree.EConst(self, b"")
+            return latte_tree.EConst(self, b"", None)
         else:
             raise NotImplementedError()
 

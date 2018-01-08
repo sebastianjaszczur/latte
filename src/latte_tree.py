@@ -1,13 +1,21 @@
 from typing import List
 from latte_misc import MUL, DIV, MOD, ADD, \
-    SUB, LT, LE, GT, GE, EQ, NE, AND, OR, SPECIAL, UID, TypeNotFound, VType, \
-    VList, VFun, VClass, VBool, VInt, VString, VVoid
+    SUB, LT, LE, GT, GE, EQ, NE, AND, OR, SPECIAL, UID, VType, \
+    VFun, VClass, VBool, VInt, VString, VVoid, CompilationError, NEG
 
 
-def op_array(op: str, vtype1: 'VType', vtype2: 'VType'=None) -> (str, 'VType'):
+def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType'=None)\
+        -> (str, 'VType'):
+    if vtype2 is None:
+        # (a, _) -> b
+        if vtype1.is_int() and op == SUB:
+            return 'sub i32 0, {}', VInt()
+        if vtype1.is_bool() and op == NEG:
+            return 'sub i1 1, {}', VBool()
+        raise CompilationError('invalid operator', ctx)
+
     if vtype1 != vtype2:
-        # TODO: Add unary operators.
-        raise NotImplementedError()
+        raise CompilationError('invalid operator', ctx)
     # (a, a) -> b
     if vtype1.is_int():
         # (int, int) -> int
@@ -53,8 +61,7 @@ def op_array(op: str, vtype1: 'VType', vtype2: 'VType'=None) -> (str, 'VType'):
         elif op == NE:
             return SPECIAL, VBool()
     # Other
-    raise ValueError("Op not allowed: {} {} {}"
-                     .format(vtype1.name, op, vtype2.name))
+    raise CompilationError("invalid operator", ctx)
 
 
 class Expr(object):
@@ -79,11 +86,13 @@ class Expr(object):
 
 
 class EConst(Expr):
-    def __init__(self, vtype: VType, value):
+    def __init__(self, vtype: VType, value, ctx):
         self.value = value
         if isinstance(value, str):
-            raise ValueError("WTF")
+            # It really should not happen.
+            raise ValueError("should encounter bytes, not string value")
         self.vtype = vtype
+        self.ctx = ctx
 
     def to_str(self, ident=0):
         ret = " " * ident + "const {}:{}\n".format(self.value, self.vtype)
@@ -98,26 +107,25 @@ class EConst(Expr):
         elif self.vtype.is_string():
             code_line = program.constants.get_code_line(self.value)
         else:
-            raise ValueError(
-                "Type {} not supported for assignment".format(type))
+            raise CompilationError("type not supported for consts", self.ctx)
         return [code_line]
 
 
-def load_address(program, vtype: VType, register: str) -> 'CodeLine':
+def load_address(program, vtype: VType, register: str, ctx) -> 'CodeLine':
     if vtype.is_intboolstring():
         code_line = CodeLine(
             "load {type}, {type}* {reg}".format(reg=register,
                                                 type=vtype.llvm_type()))
     else:
-        raise ValueError(
-            "Type {} not supported for loading".format(type))
+        raise CompilationError("type not supported for loading", ctx)
     return code_line
 
 
 class EVar(Expr):
-    def __init__(self, name: str, vtype: VType):
+    def __init__(self, name: str, vtype: VType, ctx):
         self.name = name
         self.vtype = vtype
+        self.ctx = ctx
 
     def to_str(self, ident=0):
         ret = " " * ident + "var {}:{}\n".format(self.name, self.vtype)
@@ -132,22 +140,45 @@ class EVar(Expr):
                 "getelementptr  {type}, {type}* {name}, i32 0".format(
                     name=self.name, type=vtype_unref.llvm_type()))
         else:
-            raise ValueError(
-                "Type {} not supported for assignment".format(vtype_unref))
+            raise CompilationError(
+                "type not supported for assignment", self.ctx)
 
         if keep_ref:
             return [code_line]
         else:
             return [code_line, load_address(
-                program, vtype_unref, code_line.get_var_name())]
+                program, vtype_unref, code_line.get_var_name(), self.ctx)]
+
+
+class EUnaryOp(Expr):
+    def __init__(self, vtype: VType, expr: Expr, op, ctx):
+        self.vtype = vtype
+        self.expr = expr
+        self.op = op
+        self.ctx = ctx
+
+    def to_str(self, ident=0):
+        ret = " " * ident + "op {}:{}\n".format(self.op, self.vtype)
+        ret += self.expr.to_str(ident + 2)
+        return ret
+
+    def get_code_lines(self, program: 'Program', keep_ref=False)\
+            -> List['CodeLine']:
+        code_lines = self.expr.get_code_lines(program)
+        val = code_lines[-1].get_var_name()
+
+        instr, vtype = op_array(self.ctx, self.op, self.expr.vtype)
+        code_lines.append(CodeLine(instr.format(val)))
+        return code_lines
 
 
 class EOp(Expr):
-    def __init__(self, vtype: VType, lexpr: Expr, rexpr: Expr, op):
+    def __init__(self, vtype: VType, lexpr: Expr, rexpr: Expr, op, ctx):
         self.vtype = vtype
         self.lexpr = lexpr
         self.rexpr = rexpr
         self.op = op
+        self.ctx = ctx
 
     def to_str(self, ident=0):
         ret = " " * ident + "op {}:{}\n".format(self.op, self.vtype)
@@ -163,7 +194,7 @@ class EOp(Expr):
         rval = r_code_lines[-1].get_var_name()
         code_lines = l_code_lines + r_code_lines
 
-        instr, vtype = op_array(self.op, self.lexpr.vtype, self.rexpr.vtype)
+        instr, vtype = op_array(self.ctx, self.op, self.lexpr.vtype, self.rexpr.vtype)
         if instr == SPECIAL:
             raise NotImplementedError()
         else:
@@ -172,7 +203,8 @@ class EOp(Expr):
 
 
 class ECall(Expr):
-    def __init__(self, name: str, vtype: VType, argtypes: List[VType], args: List[Expr]):
+    def __init__(self, name: str, vtype: VType, argtypes: List[VType],
+                 args: List[Expr]):
         self.name = name
         self.vtype = vtype
         self.argtypes = argtypes
@@ -210,44 +242,37 @@ class VariablesBlock(object):
         self.upper = upper_block
         self.uid = UID.get_uid()
 
-    def add_variable(self, name: str, type: VType, declare=False,
+    def add_variable(self, name: str, type: VType, ctx, declare=False,
                      argument=False):
         assert isinstance(type, VType)
         if name in self.vars:
-            raise NameError("Variable {} already exists.".format(name))
+            raise CompilationError("variable already exists", ctx)
         self.vars[name] = type
         if argument:
             self.arguments.append(name)
         if declare:
             self.declare(name)
 
-    def get_variable(self, name: str) -> VType:
+    def get_variable(self, name: str, ctx) -> VType:
         if name in self.vars:
             if name in self.declared:
                 return self.vars[name]
             else:
-                raise NameError("Variable {} not yet declared.".format(name))
+                raise CompilationError("variable not yet declared", ctx)
         if self.upper is not None:
-            return self.upper.get_variable(name)
-        raise NameError("Variable {} doesn't exist.".format(name))
+            return self.upper.get_variable(name, ctx)
+        raise CompilationError("variable not yet declared", ctx)
 
-    def get_variable_name(self, name: str):
+    def get_variable_name(self, name: str, ctx):
         if name in self.vars:
             return "%b{}_{}".format(self.uid, name)
         if self.upper is not None:
-            return self.upper.get_variable_name(name)
-        raise NameError("Variable {} doesn't exist.".format(name))
+            return self.upper.get_variable_name(name, ctx)
+        raise CompilationError("variable doesn't exist", ctx)
 
     def declare(self, name: str):
         assert name in self.vars
         self.declared.add(name)
-
-    def assert_declared(self, name: str):
-        if name in self.vars:
-            if name not in self.declared:
-                raise NameError("Variable {} not yet declared.".format(name))
-        else:
-            self.upper.assert_declared(name)
 
     def __iter__(self):
         for var in self.vars:
@@ -256,8 +281,8 @@ class VariablesBlock(object):
     def to_str(self, ident=0):
         res = ""
         for name in self:
-            res += " " * ident + "{}: {}\n".format(name,
-                                                   self.get_variable(name))
+            res += " " * ident + "{}: {}\n".format(
+                name, self.get_variable(name, None))
         return res or (" " * ident + "--none--\n")
 
 
@@ -305,26 +330,21 @@ class Program(object):
         self.functions = dict()  # name -> Function
         self.current_function = None
 
-        self.globals.add_variable("printInt", VFun(VVoid(), (VInt(),)),
+        self.globals.add_variable("printInt", VFun(VVoid(), (VInt(),)), None,
                                   declare=True)
         self.globals.add_variable("printString", VFun(VVoid(), (VString(),)),
+                                  None, declare=True)
+        self.globals.add_variable("error", VFun(VVoid(), tuple()), None,
                                   declare=True)
-        self.globals.add_variable("error", VFun(VVoid(), tuple()),
+        self.globals.add_variable("readInt", VFun(VInt(), tuple()), None,
                                   declare=True)
-        self.globals.add_variable("readInt", VFun(VInt(), tuple()),
-                                  declare=True)
-        self.globals.add_variable("readString", VFun(VString(), tuple()),
+        self.globals.add_variable("readString", VFun(VString(), tuple()), None,
                                   declare=True)
 
-    def name_to_type(self, name: str) -> VType:
+    def name_to_type(self, name: str, ctx) -> VType:
         if name in self.types:
             return self.types[name]
-
-        if name.endswith("[]"):
-            base = VType.name_to_type(name[:-2])
-            self.types[name] = VList(base)
-        else:
-            raise TypeNotFound(name)
+        raise CompilationError("type not found", ctx)
 
     def __str__(self):
         res = "Program:\n"
@@ -375,7 +395,7 @@ class Stmt(object):
     def get_code_blocks(
             self, program: Program,
             next_code_block: 'CodeBlock' = None) -> List['CodeBlock']:
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 def br_block(block: 'CodeBlock') -> List['CodeLine']:
@@ -410,9 +430,10 @@ class EmptyStmt(Stmt):
 
 
 class SAssi(Stmt):
-    def __init__(self, texpr: Expr, vexpr: Expr):
+    def __init__(self, texpr: Expr, vexpr: Expr, ctx):
         self.texpr = texpr
         self.vexpr = vexpr
+        self.ctx = ctx
 
     def to_str(self, ident=0):
         ret = " " * ident + "Assi\n"
@@ -435,8 +456,7 @@ class SAssi(Stmt):
                 val=v_val, tar=t_var, type=vtype.llvm_type()),
                 save_result=False)
         else:
-            raise ValueError(
-                "Type {} not supported for assignment".format(vtype))
+            raise CompilationError("invalid assignment", self.ctx)
 
         # br_line
         br_lines = br_block(next_code_block)
@@ -567,8 +587,7 @@ class SReturn(Stmt):
                 rline = "ret {type} {name}".format(name=vname,
                                                    type=vtype.llvm_type())
             else:
-                raise NotImplementedError("Type {} not supported for return"
-                                          .format(vtype.name))
+                raise NotImplementedError()
             codelines.append(CodeLine(rline, save_result=False))
         else:
             codelines = [CodeLine("ret void", save_result=False)]
@@ -644,7 +663,7 @@ class Block(Stmt):
 
         init_codelines = []
         for varname in self.vars.vars:
-            block_varname = self.vars.get_variable_name(varname)
+            block_varname = self.vars.get_variable_name(varname, None)
             vtype = self.vars.vars[varname]
             if vtype.is_intboolstring():
                 init_codelines.append(CodeLine("{var} = alloca {type}".format(
@@ -656,8 +675,7 @@ class Block(Stmt):
                             var=varname, b_var=block_varname,
                             type=vtype.llvm_type()), save_result=False))
             else:
-                raise NotImplementedError(
-                    "Type {} of {} unavailable for init".format(vtype, varname))
+                raise NotImplementedError()
         if code_blocks:
             init_codelines.extend(br_block(code_blocks[0]))
         init_block = CodeBlock(init_codelines, comment="init")
@@ -665,9 +683,10 @@ class Block(Stmt):
 
 
 class Function(object):
-    def __init__(self, name: str, block: Block):
+    def __init__(self, name: str, block: Block, ctx):
         self.name = name
         self.block = block
+        self.ctx = ctx
 
     def to_str(self, ident=0):
         ret = " " * ident + "funtion {}:\n".format(self.name)
@@ -679,21 +698,19 @@ class Function(object):
 
     def get_source(self, program: Program):
         code_blocks = self.get_code_blocks(program)
-        if not program.last_vars.get_variable(self.name).rtype.is_void():
+        if not program.last_vars.get_variable(self.name, self.ctx).rtype.is_void():
             if (not code_blocks) or (not code_blocks[-1].ending):
-                raise ValueError("Function {} doesn't have return.".format(
-                    self.name))
+                raise CompilationError("function doesn't return", self.ctx)
 
         arg_strings = []
         for argname in self.block.vars.arguments:
-            vtype = self.block.vars.get_variable(argname)
+            vtype = self.block.vars.get_variable(argname, None)
             if vtype.is_intboolstring():
                 arg_strings.append('{} %{}'.format(vtype.llvm_type(), argname))
             else:
-                raise NotImplementedError("Type {} of {} not supported yet."
-                                          .format(vtype.name, argname))
+                raise NotImplementedError()
 
-        rtype = program.last_vars.get_variable(self.name).rtype.llvm_type()
+        rtype = program.last_vars.get_variable(self.name, None).rtype.llvm_type()
 
         begin_lines = [
             "define {} @f_{}({}) {{".format(rtype, self.name,

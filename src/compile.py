@@ -7,6 +7,7 @@ from antlr4.tree.Tree import TerminalNodeImpl
 from LatteLexer import LatteLexer
 from LatteParser import LatteParser
 from latte_parser import LLVMVariableException, LLVMVisitor
+from latte_misc import ErrorRaiser, CompilationError
 
 # TODO: Better error handling
 
@@ -41,8 +42,12 @@ def generate_ll(sourcefile, outputfile):
     try:
         inputstrewam = InputStream(sourcefile.read())
         lexer = LatteLexer(inputstrewam)
+        lexer.removeErrorListeners()
+        lexer.addErrorListener(ErrorRaiser())
         tokenstream = CommonTokenStream(lexer)
         parser = LatteParser(tokenstream)
+        parser.removeErrorListeners()
+        parser.addErrorListener(ErrorRaiser())
         tree = parser.program()
 
         print_debug("Parse tree")
@@ -57,9 +62,13 @@ def generate_ll(sourcefile, outputfile):
         print_debug("CODE")
         program.do_checks()
         source = program.get_source()
+    except CompilationError as e:
+        print_err("ERROR")
+        print_err(str(e))
+        exit(1)
     except Exception as e:
         print_err("ERROR")
-        print_err("Unknown exception.")
+        print_err("unexpected exception")
         raise
 
     print_err("OK")
