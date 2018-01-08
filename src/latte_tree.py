@@ -698,9 +698,14 @@ class Function(object):
 
     def get_source(self, program: Program):
         code_blocks = self.get_code_blocks(program)
-        if not program.last_vars.get_variable(self.name, self.ctx).rtype.is_void():
-            if (not code_blocks) or (not code_blocks[-1].ending):
-                raise CompilationError("function doesn't return", self.ctx)
+
+        if program.last_vars.get_variable(self.name, self.ctx).rtype.is_void():
+            if not code_blocks:
+                code_blocks.append(CodeBlock([], ending=True))
+            codeline = CodeLine('ret void', save_result=False)
+            code_blocks[-1].codelines.append(codeline)
+        elif (not code_blocks) or (not code_blocks[-1].ending):
+            raise CompilationError("function doesn't return", self.ctx)
 
         arg_strings = []
         for argname in self.block.vars.arguments:
