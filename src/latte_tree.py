@@ -1,5 +1,5 @@
 from typing import List
-from misc import MUL, DIV, MOD, ADD, \
+from latte_misc import MUL, DIV, MOD, ADD, \
     SUB, LT, LE, GT, GE, EQ, NE, AND, OR, SPECIAL, UID, TypeNotFound, VType, \
     VList, VFun, VClass, VBool, VInt, VString, VVoid
 
@@ -81,6 +81,8 @@ class Expr(object):
 class EConst(Expr):
     def __init__(self, vtype: VType, value):
         self.value = value
+        if isinstance(value, str):
+            raise ValueError("WTF")
         self.vtype = vtype
 
     def to_str(self, ident=0):
@@ -280,7 +282,7 @@ class Constants(object):
             lines.append(self._get_declaration_line(constant))
         return "\n".join(lines)
 
-    def add_constant(self, value: str):
+    def add_constant(self, value: bytes):
         if value in self.constants:
             return
         self.constants[value] = "@sc_" + str(UID.get_uid())
@@ -343,6 +345,16 @@ class Program(object):
 
     def get_source(self):
         source = ""
+        source += "declare void @f_printInt(i32)\n"
+        source += "declare void @f_printString(i8*)\n"
+        source += "declare void @f_error()\n"
+        source += "declare i32 @f_readInt()\n"
+        source += "declare i8* @f_readString()\n"
+
+        source += "declare i8* @op_addString(i8*, i8*)\n"
+        source += "declare i32 @op_eqString(i8*, i8*)\n"
+        source += "declare i32 @op_neString(i8*, i8*)\n"
+
         source += self.constants.get_source() + '\n'
         for function in self.functions.values():
             source += function.get_source(self) + "\n\n"

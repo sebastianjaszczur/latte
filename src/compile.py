@@ -6,7 +6,7 @@ from antlr4.tree.Tree import TerminalNodeImpl
 
 from LatteLexer import LatteLexer
 from LatteParser import LatteParser
-from parser import LLVMVariableException, LLVMVisitor
+from latte_parser import LLVMVariableException, LLVMVisitor
 
 # TODO: Better error handling
 
@@ -24,7 +24,8 @@ def print_debug(*args, **kwargs):
 
 
 def print_err(*args, **kwargs):
-    print(*args, **kwargs, file=sys.stderr)
+    kwargs['file'] = sys.stderr
+    print(*args, **kwargs)
 
 
 def print_parse_tree(tree, indent_level=0):
@@ -57,10 +58,12 @@ def generate_ll(sourcefile, outputfile):
         program.do_checks()
         source = program.get_source()
     except Exception as e:
-        print_err("Unknown exception: {}".format(e))
-        exit(1)
+        print_err("ERROR")
+        print_err("Unknown exception.")
+        raise
 
-    print_err("OK\n")
+    print_err("OK")
+    print_debug(source)
     print(source, file=outputfile)
 
 
@@ -91,8 +94,6 @@ def main():
             file=sys.stderr)
         os.remove(llname)
         exit(3)
-
-    os.system("llvm-as {}".format(llname))
 
     print_debug("Done.")
 

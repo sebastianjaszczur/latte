@@ -105,3 +105,8 @@ ENV/
 
 # antlr4
 antlr-4.7-complete.jar
+
+*.o
+*.actout
+*.ll
+latc

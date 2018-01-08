@@ -1,9 +1,9 @@
 from LatteParser import LatteParser
 from LatteVisitor import LatteVisitor
-from typedtree import Program, VariablesBlock, Function, Block, Stmt, EOp, \
+from latte_tree import Program, VariablesBlock, Function, Block, Stmt, EOp, \
     EConst, SAssi, EVar, EmptyStmt, SIfElse, SReturn, \
     SWhile, op_array, ECall
-from misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, OR, VRef, \
+from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, OR, VRef, \
     VFun, VBool, VInt, VString
 
 
@@ -103,6 +103,8 @@ class LLVMVisitor(LatteVisitor):
         texpr = self.visit(ctx.expr(0))
         if not isinstance(texpr.vtype, VRef):
             raise ValueError("Invalid assignment target.")
+        if vexpr.vtype != texpr.vtype:
+            raise ValueError("Invalid assignment types.")
         return SAssi(texpr, vexpr)
 
     def visitSdecl(self, ctx: LatteParser.SdeclContext):

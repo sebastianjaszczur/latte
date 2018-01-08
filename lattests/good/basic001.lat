@@ -1,8 +1,5 @@
-// Autor: Tomasz Wysocki 277696
 int main() {
-	int x;
-    if(3 == 4) {
-    	int x = 3;
-    }
-    return 0;
+        int x;
+        x = 1;
+        return 1;
 }

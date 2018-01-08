@@ -1,4 +1,4 @@
-import typedtree
+import latte_tree
 
 BOOL = 'i1'
 INT = 'i32'
@@ -115,11 +115,11 @@ class VClass(VType):
 
     def get_default_expr(self):
         if self.is_int():
-            return typedtree.EConst(self, 0)
+            return latte_tree.EConst(self, 0)
         elif self.is_bool():
-            return typedtree.EConst(self, False)
+            return latte_tree.EConst(self, False)
         elif self.is_string():
-            return typedtree.EConst(self, "")
+            return latte_tree.EConst(self, b"")
         else:
             raise NotImplementedError()
 

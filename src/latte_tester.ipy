@@ -1,0 +1,57 @@
+DEBUG = False
+
+def run_test(file: str) -> bool:
+    assert file.endswith(".lat")
+    filebase = file[:-4]
+    o = !bash latc {filebase}.lat
+    if "ERROR" in o:
+        return "COMPILE ERROR"
+
+    # TODO: run program
+    o = !{filebase}.o >{filebase}.actout
+    if(o):
+        raise ValueError(str(o))
+    return "OK"
+
+def main(dir="lattests/bad/", expected_good=True):
+    files = !ls {dir}
+    tests = [file for file in files if file.endswith(".lat")]
+    ok = 0
+    err = 0
+    for test in tests:
+        print(dir+test, end="")
+        res = run_test(dir + test)
+        if res == "OK":
+            ok += 1
+            print(" OK")
+            if not expected_good and DEBUG:
+                !cat {dir + test}
+                print()
+        else:
+            err += 1
+            print(" ERROR")
+            if expected_good and DEBUG:
+                !cat {dir + test}
+                print()
+    print()
+    all = ok + err
+    expected = ok if expected_good else err
+    print("NOT expected: {}/{}".format(all - expected, all))
+    print()
+    print()
+    return all - expected
+
+if __name__ == "__main__":
+    for good_dir in ["lattests/good/", "studentstests/good/basic/"]:
+        main(good_dir, True)
+
+    print()
+    print()
+    print()
+
+    not_expected = 0
+    for bad_dir in ["lattests/bad/", "studentstests/bad/semantic/"]:
+        not_expected += main(bad_dir, False)
+
+    print()
+    print("all not expected:", not_expected)
