@@ -6,7 +6,7 @@ all:
 	venv/bin/pip install antlr4-python3-runtime typing
 	echo "#!/bin/bash" >latc
 	echo "$(mkfile_dir)venv/bin/python3 $(mkfile_dir)src/compile.py \"\$$@\"" >>latc
-	echo "clang \"\$${@%.*}.ll\" $(mkfile_dir)src/stdlatte.c -o \"\$${@%.*}.o\" >>latc
+	echo "clang \"\$${@%.*}.ll\" $(mkfile_dir)src/stdlatte.c -o \"\$${@%.*}.o\" " >>latc
 	chmod +x latc
 
 clean:
