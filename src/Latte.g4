@@ -60,6 +60,7 @@ expr
 	| expr (LT|LE|GT|GE|EQ|NE) expr #ecomp
 	| <assoc=right> expr '&&' expr #eand
 	| <assoc=right> expr '||' expr #eor
+	| '(' expr ')' # epare
 	;
 
 // operators

@@ -1,6 +1,6 @@
 DEBUG = False
 
-def run_test(file: str) -> bool:
+def run_test(dir: str, file: str) -> bool:
     assert file.endswith(".lat")
     filebase = file[:-4]
     o = !bash latc {filebase}.lat

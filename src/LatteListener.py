@@ -188,6 +188,15 @@ class LatteListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LatteParser#epare.
+    def enterEpare(self, ctx:LatteParser.EpareContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#epare.
+    def exitEpare(self, ctx:LatteParser.EpareContext):
+        pass
+
+
     # Enter a parse tree produced by LatteParser#eintv.
     def enterEintv(self, ctx:LatteParser.EintvContext):
         pass

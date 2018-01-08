@@ -170,6 +170,9 @@ class LLVMVisitor(LatteVisitor):
         body = self.visit(ctx.stmt())
         return SWhile(condition, body)
 
+    def visitEpare(self, ctx:LatteParser.EpareContext):
+        return self.visit(ctx.expr())
+
     def visitEintv(self, ctx: LatteParser.EintvContext):
         # TODO: do something with really big/small ints.
         vtype = VInt()

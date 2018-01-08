@@ -109,6 +109,11 @@ class LatteVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LatteParser#epare.
+    def visitEpare(self, ctx:LatteParser.EpareContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LatteParser#eintv.
     def visitEintv(self, ctx:LatteParser.EintvContext):
         return self.visitChildren(ctx)
