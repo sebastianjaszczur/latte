@@ -218,12 +218,16 @@ class EOp(Expr):
                 code_lines.append(CodeLine("WORK{}:".format(uid),
                                            save_result=False))
                 code_lines.extend(r_code_lines)
+                code_lines.append(CodeLine('br label %WORKED{}'.format(uid),
+                                           save_result=False))
+                code_lines.append(CodeLine("WORKED{}:".format(uid),
+                                           save_result=False))
                 code_lines.append(CodeLine('br label %LAZY{}'.format(uid),
                                            save_result=False))
                 code_lines.append(CodeLine("LAZY{}:".format(uid),
                                            save_result=False))
                 code_lines.append(CodeLine(
-                    "phi i1 [{lval}, %ISLAZY{uid}], [{rval}, %WORK{uid}]"
+                    "phi i1 [{lval}, %ISLAZY{uid}], [{rval}, %WORKED{uid}]"
                     .format(lval=lval, rval=rval, uid=uid)
                 ))
             elif self.vtype.is_string():
