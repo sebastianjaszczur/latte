@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 void f_printInt(int x) {
 	printf("%d\n", x);
@@ -55,8 +56,8 @@ char* op_addString(char* left, char* right) {
 }
 
 int op_eqString(char* left, char* right) {
-	size_t result = str_equal(left, right);
-	if(result != 0)
+	size_t result = strcmp(left, right);
+	if(result == 0)
 		return 1;
 	return 0;
 }

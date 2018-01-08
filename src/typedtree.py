@@ -1,3 +1,4 @@
+import codecs
 from typing import List
 
 # Types
@@ -70,6 +71,7 @@ def op_array(op: str, vtype1: 'VType', vtype2: 'VType'=None) -> (str, 'VType'):
         elif op == OR:
             return SPECIAL, VBool()
     elif vtype1.is_string():
+        # TODO: Add more string comparisons.
         if op == ADD:
             return 'call i8* @op_addString(i8* {}, i8* {})', VString()
         elif op == EQ:
@@ -153,7 +155,7 @@ class VRef(VType):
         return self.vtype.unref()
 
     def llvm_type(self):
-        return self.llvm_type() + "*"
+        return self.vtype.llvm_type() + "*"
 
 
 class VFun(VType):
@@ -247,7 +249,7 @@ class EConst(Expr):
         elif self.vtype.is_bool():
             code_line = CodeLine("add i1 0, {}".format(int(self.value)))
         elif self.vtype.is_string():
-            raise NotImplementedError("string constants not implemented")
+            code_line = program.constants.get_code_line(self.value)
         else:
             raise ValueError(
                 "Type {} not supported for assignment".format(type))
@@ -277,15 +279,14 @@ class EVar(Expr):
     def get_code_lines(self, program: 'Program', keep_ref=False)\
             -> List['CodeLine']:
         vtype_unref = self.vtype.unref()
-        if vtype_unref.is_int():
+        if vtype_unref.is_intboolstring():
             code_line = CodeLine(
-                "getelementptr  i32, i32* {}, i32 0".format(self.name))
-        elif vtype_unref.is_bool():
-            code_line = CodeLine(
-                "getelementptr  i1, i1* {}, i1 0".format(self.name))
+                # This i32 below is OK, because it's actually an index.
+                "getelementptr  {type}, {type}* {name}, i32 0".format(
+                    name=self.name, type=vtype_unref.llvm_type()))
         else:
             raise ValueError(
-                "Type {} not supported for assignment".format(type))
+                "Type {} not supported for assignment".format(vtype_unref))
 
         if keep_ref:
             return [code_line]
@@ -347,7 +348,7 @@ class ECall(Expr):
             arg_strings.append("{} {}".format(argtype.llvm_type(), argval))
 
         rtype = self.vtype
-        call_line = CodeLine("call {rtype} @{name}({args})".format(
+        call_line = CodeLine("call {rtype} @f_{name}({args})".format(
             rtype=rtype.llvm_type(), name=self.name,
             args=", ".join(arg_strings)
         ), save_result=(not rtype.is_void()))
@@ -413,15 +414,60 @@ class VariablesBlock(object):
         return res or (" " * ident + "--none--\n")
 
 
+class Constants(object):
+    def __init__(self):
+        self.constants = dict()  # val -> name
+
+    def _get_declaration_line(self, val: bytes) -> str:
+        name = self.constants[val]
+        size = len(val) + 1  # +1 because of null byte.
+
+        llval = "".join(["\\"+str(hex(c))[2:].rjust(2, "0").upper()
+                         for c in val]) + "\\00"
+        line = "{name} = internal constant[{size} x i8] c\"{val}\"".format(
+            name=name, size=size, val=llval
+        )
+        return line
+
+    def get_source(self) -> str:
+        lines = []
+        for constant in self.constants:
+            lines.append(self._get_declaration_line(constant))
+        return "\n".join(lines)
+
+    def add_constant(self, value: str):
+        if value in self.constants:
+            return
+        self.constants[value] = "@sc_" + str(UID.get_uid())
+
+    def get_code_line(self, val: bytes) -> 'CodeLine':
+        size = len(val) + 1
+        code = "bitcast [{size} x i8]* {name} to i8*".format(
+            size=size, name=self.constants[val])
+        return CodeLine(code)
+
+
 class Program(object):
     def __init__(self):
-        self.types = dict()
+        self.types = dict()  # name -> VType
         for typ in ["string", "int", "boolean", "void"]:
             self.types[typ] = VClass(typ)
         self.globals = VariablesBlock()
+        self.constants = Constants()
         self.last_vars = self.globals
-        self.functions = dict()
+        self.functions = dict()  # name -> Function
         self.current_function = None
+
+        self.globals.add_variable("printInt", VFun(VVoid(), (VInt(),)),
+                                  declare=True)
+        self.globals.add_variable("printString", VFun(VVoid(), (VString(),)),
+                                  declare=True)
+        self.globals.add_variable("error", VFun(VVoid(), tuple()),
+                                  declare=True)
+        self.globals.add_variable("readInt", VFun(VInt(), tuple()),
+                                  declare=True)
+        self.globals.add_variable("readString", VFun(VString(), tuple()),
+                                  declare=True)
 
     def name_to_type(self, name: str) -> VType:
         if name in self.types:
@@ -444,6 +490,11 @@ class Program(object):
         for fun in self.functions:
             res += self.functions[fun].to_str(4)
         return res
+
+    def do_checks(self):
+        # TODO: check if main exists AND if it has correct type/args.
+        # TODO: check if every fucntion is ending
+        pass
 
 
 class Stmt(object):
@@ -542,6 +593,11 @@ class SIfElse(Stmt):
     def get_code_blocks(
             self, program: Program,
             next_code_block: 'CodeBlock' = None) -> List['CodeBlock']:
+        if isinstance(self.cond, EConst):
+            if self.cond.value:
+                return self.ifstmt.get_code_blocks(program, next_code_block)
+            else:
+                return self.elsestmt.get_code_blocks(program, next_code_block)
         # End block
         brlines = br_block(next_code_block)
         end_block = CodeBlock(brlines, comment="end-if")
@@ -584,6 +640,7 @@ class SWhile(Stmt):
     def get_code_blocks(
             self, program: Program,
             next_code_block: 'CodeBlock' = None) -> List['CodeBlock']:
+        # Maybe end endless loop only if there is a return inside?
         if isinstance(self.cond, EConst):
             if self.cond.value:
                 code_blocks = self.body.get_code_blocks(program, None)
@@ -635,12 +692,13 @@ class SReturn(Stmt):
         if self.expr:
             codelines = self.expr.get_code_lines(program)
             vname = codelines[-1].get_var_name()
-            vtype = self.expr.vtype
+            vtype = self.expr.vtype.unref()
             if vtype.is_intboolstring():
                 rline = "ret {type} {name}".format(name=vname,
                                                    type=vtype.llvm_type())
             else:
-                raise NotImplementedError("Type not supproted")
+                raise NotImplementedError("Type {} not supported for return"
+                                          .format(vtype.name))
             codelines.append(CodeLine(rline, save_result=False))
         else:
             codelines = [CodeLine("ret void", save_result=False)]
@@ -768,7 +826,7 @@ class Function(object):
         rtype = program.last_vars.get_variable(self.name).rtype.llvm_type()
 
         begin_lines = [
-            "define {} @{}({}){{".format(rtype, self.name,
+            "define {} @f_{}({}) {{".format(rtype, self.name,
                                          ", ".join(arg_strings)),
         ]
 

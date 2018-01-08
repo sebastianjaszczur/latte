@@ -7,7 +7,7 @@ import sys
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3&")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3%")
         buf.write("\u009d\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\3\2\7\2\24\n\2\f\2\16\2\27\13\2\3\3\3")
         buf.write("\3\3\3\3\3\3\3\3\3\7\3\37\n\3\f\3\16\3\"\13\3\5\3$\n\3")
@@ -92,7 +92,7 @@ class LatteParser ( Parser ):
                       "<INVALID>", "<INVALID>", "<INVALID>", "MUL", "DIV", 
                       "MOD", "ADD", "SUB", "LT", "LE", "GT", "GE", "EQ", 
                       "NE", "WS", "COMMENT_SL", "COMMENT_ML", "INT", "IDENT", 
-                      "Strval", "CHAR" ]
+                      "STRING" ]
 
     RULE_program = 0
     RULE_fundef = 1
@@ -141,8 +141,7 @@ class LatteParser ( Parser ):
     COMMENT_ML=32
     INT=33
     IDENT=34
-    Strval=35
-    CHAR=36
+    STRING=35
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -395,7 +394,7 @@ class LatteParser ( Parser ):
             self.state = 45
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__3) | (1 << LatteParser.T__6) | (1 << LatteParser.T__9) | (1 << LatteParser.T__10) | (1 << LatteParser.T__12) | (1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.Strval))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__3) | (1 << LatteParser.T__6) | (1 << LatteParser.T__9) | (1 << LatteParser.T__10) | (1 << LatteParser.T__12) | (1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.STRING))) != 0):
                 self.state = 42
                 self.stmt()
                 self.state = 47
@@ -849,7 +848,7 @@ class LatteParser ( Parser ):
                 self.state = 84
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.Strval))) != 0):
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.STRING))) != 0):
                     self.state = 83
                     self.expr(0)
 
@@ -1123,8 +1122,8 @@ class LatteParser ( Parser ):
             super().__init__(parser)
             self.copyFrom(ctx)
 
-        def Strval(self):
-            return self.getToken(LatteParser.Strval, 0)
+        def STRING(self):
+            return self.getToken(LatteParser.STRING, 0)
 
         def enterRule(self, listener:ParseTreeListener):
             if hasattr( listener, "enterEstrv" ):
@@ -1370,7 +1369,7 @@ class LatteParser ( Parser ):
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 112
-                self.match(LatteParser.Strval)
+                self.match(LatteParser.STRING)
                 pass
 
             elif la_ == 4:
@@ -1400,7 +1399,7 @@ class LatteParser ( Parser ):
                 self.state = 125
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.Strval))) != 0):
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.STRING))) != 0):
                     self.state = 117
                     self.expr(0)
                     self.state = 122

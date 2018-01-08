@@ -1,5 +1,7 @@
 import os
 import sys
+from ast import literal_eval
+
 from antlr4 import InputStream, CommonTokenStream
 from antlr4.tree.Tree import TerminalNodeImpl
 
@@ -139,6 +141,8 @@ class LLVMVisitor(LatteVisitor):
 
     def visitSdecl(self, ctx: LatteParser.SdeclContext):
         vtype = self.program.name_to_type(str(ctx.vtype().IDENT()))
+        if not vtype.is_intboolstring():
+            raise ValueError("Type {} not declarable.".format(vtype.name))
         tstmts = []
         for item in ctx.item():
             name = str(item.IDENT())
@@ -147,7 +151,8 @@ class LLVMVisitor(LatteVisitor):
                 vexpr = self.visit(expr)
             else:
                 vexpr = vtype.get_default_expr()
-            texpr = EVar(self.program.last_vars.get_variable_name(name), VRef(vtype))
+            texpr = EVar(self.program.last_vars.get_variable_name(name),
+                         VRef(vtype))
             if not isinstance(texpr.vtype, VRef):
                 raise ValueError("Invalid declaration target.")
             tstmts.append(SAssi(texpr, vexpr))
@@ -158,10 +163,13 @@ class LLVMVisitor(LatteVisitor):
         return self.visit(ctx.expr())
 
     def visitSifel(self, ctx: LatteParser.SifelContext):
-        #TODO: ban declaration without enclosing block
         condition = self.visit(ctx.expr())
         if not condition.vtype.is_bool():
             raise ValueError("Invalid condition type")
+        if isinstance(ctx.stmt(0), LatteParser.SdeclContext):
+            raise ValueError("Declaration not expected.")
+        if isinstance(ctx.stmt(1), LatteParser.SdeclContext):
+            raise ValueError("Declaration not expected.")
         ifstmt = self.visit(ctx.stmt(0))
         if ctx.stmt(1):
             elsestmt = self.visit(ctx.stmt(1))
@@ -190,10 +198,13 @@ class LLVMVisitor(LatteVisitor):
         condition = self.visit(ctx.expr())
         if not condition.vtype.is_bool():
             raise ValueError("Invalid condition type")
+        if isinstance(ctx.stmt(), LatteParser.SdeclContext):
+            raise ValueError("Declaration not expected.")
         body = self.visit(ctx.stmt())
         return SWhile(condition, body)
 
     def visitEintv(self, ctx: LatteParser.EintvContext):
+        # TODO: do something with really big/small ints.
         vtype = VInt()
         val = int(str(ctx.INT()))
         return EConst(vtype, val)
@@ -207,8 +218,12 @@ class LLVMVisitor(LatteVisitor):
         return EConst(vtype, False)
 
     def visitEstrv(self, ctx: LatteParser.EstrvContext):
-        # TODO: fix strings
-        raise NotImplementedError("String constants are not implemented.")
+        vtype = VString()
+        val = bytes(
+            bytes(str(ctx.STRING())[1:-1], "utf-8").decode("unicode_escape"),
+            'utf-8')
+        self.program.constants.add_constant(val)
+        return EConst(vtype, val)
 
     def visitEadd(self, ctx: LatteParser.EaddContext):
         if ctx.ADD():
@@ -285,7 +300,6 @@ class LLVMVisitor(LatteVisitor):
         if len(argtypes) != len(args):
             raise ValueError("Wrong number of arguments to function.")
         for arg, argtype in zip(args, argtypes):
-            print(arg.vtype.__class__, argtype.__class__)
             if arg.vtype != argtype:
                 raise ValueError("Wrong type of an argument to {}".format(name))
 
@@ -313,7 +327,6 @@ class LLVMVisitor(LatteVisitor):
         assert False
 
     def visitVtype(self, ctx: LatteParser.VtypeContext):
-        # TODO: maybe replace those ugly vtypes to strings?
         # it should not happen
         assert False
 
@@ -344,14 +357,23 @@ def generate_ll(sourcefile, outputfile):
 
     print("Visiting")
     program = LLVMVisitor().visit(tree)
+    assert isinstance(program, Program)
     print(program)  # , file=outputfile)
     print()
 
     print("CODE")
+    program.do_checks()
+    print(program.constants.get_source())
+    print()
     for function in program.functions.values():
         print(function.get_source(program))
         print()
         print()
+    print("define i32 @main() {")
+    print("  MAIN:")
+    print("    %ret = call i32 @f_main()")
+    print("    ret i32 %ret")
+    print("}")
 
     # print(BEFORE)#, file=outputfile)
     # print code

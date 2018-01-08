@@ -49,7 +49,7 @@ vtype
 expr
 	: IDENT # eiden
 	| INT # eintv
-	| Strval #estrv
+	| STRING #estrv
 	| 'false' #efals
 	| 'true' #etrue
 	| IDENT '(' (expr (',' expr)*)? ')' #ecall
@@ -86,23 +86,20 @@ WS
 COMMENT_SL
 	: ('#' | '//') ~( '\r' | '\n' )* -> skip;
 
+
+// TODO: fix ending multiline comment
 COMMENT_ML
-	: ('/*' ()* '*/') -> skip;
+	: ('/*' ( (~'*') | ( '*' (~'/') ) )* '*/') -> skip;
 
 // idents
 
 fragment Letter  : Capital | Small ;
-fragment Capital : [A-Z\u00C0-\u00D6\u00D8-\u00DE] ;
-fragment Small   : [a-z\u00DF-\u00F6\u00F8-\u00FF] ;
+fragment Capital : [A-Z] ;
+fragment Small   : [a-z] ;
 fragment Digit : [0-9] ;
 
 INT : Digit+ ;
 fragment ID_First : Letter | '_';
 IDENT : ID_First (ID_First | Digit)* ;
 
-Strval
-	: '"' CHAR '"'
-	;
-
-CHAR : ~('/'|'"') | '//' | '/"';
-
+STRING : '"' ( ~('\\'|'"') | '\\"' | '\\\\' | '\\n' | '\\t' )* '"';

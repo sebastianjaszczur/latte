@@ -1,8 +1,6 @@
+// Autor: Tomasz Wysocki 277696
 int main() {
-	f();
-	return 3;
-}
-
-void f() {
-	return;
+	int x;
+    if(3 == 4)
+    	int x = 3;
 }
