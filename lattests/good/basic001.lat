@@ -1,4 +1,4 @@
 int main() {
-	main(3);
+	boolean x = true || false;
 	return 0;
 }

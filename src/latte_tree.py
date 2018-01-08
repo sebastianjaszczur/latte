@@ -4,7 +4,7 @@ from latte_misc import MUL, DIV, MOD, ADD, \
     VFun, VClass, VBool, VInt, VString, VVoid, CompilationError, NEG
 
 
-def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType'=None)\
+def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType' = None) \
         -> (str, 'VType'):
     if vtype2 is None:
         # (a, _) -> b
@@ -72,7 +72,7 @@ class Expr(object):
         ret = " " * ident + "Expr\n"
         return ret
 
-    def get_code_lines(self, program: 'Program', keep_ref=False)\
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         raise NotImplementedError()
 
@@ -98,7 +98,7 @@ class EConst(Expr):
         ret = " " * ident + "const {}:{}\n".format(self.value, self.vtype)
         return ret
 
-    def get_code_lines(self, program: 'Program', keep_ref=False)\
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         if self.vtype.is_int():
             code_line = CodeLine("add i32 0, {}".format(self.value))
@@ -131,7 +131,7 @@ class EVar(Expr):
         ret = " " * ident + "var {}:{}\n".format(self.name, self.vtype)
         return ret
 
-    def get_code_lines(self, program: 'Program', keep_ref=False)\
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         vtype_unref = self.vtype.unref()
         if vtype_unref.is_intboolstring():
@@ -162,7 +162,7 @@ class EUnaryOp(Expr):
         ret += self.expr.to_str(ident + 2)
         return ret
 
-    def get_code_lines(self, program: 'Program', keep_ref=False)\
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         code_lines = self.expr.get_code_lines(program)
         val = code_lines[-1].get_var_name()
@@ -186,7 +186,7 @@ class EOp(Expr):
         ret += self.rexpr.to_str(ident + 2)
         return ret
 
-    def get_code_lines(self, program: 'Program', keep_ref=False)\
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         l_code_lines = self.lexpr.get_code_lines(program)
         lval = l_code_lines[-1].get_var_name()
@@ -194,9 +194,41 @@ class EOp(Expr):
         rval = r_code_lines[-1].get_var_name()
         code_lines = l_code_lines + r_code_lines
 
-        instr, vtype = op_array(self.ctx, self.op, self.lexpr.vtype, self.rexpr.vtype)
+        instr, vtype = op_array(self.ctx, self.op, self.lexpr.vtype,
+                                self.rexpr.vtype)
         if instr == SPECIAL:
-            raise NotImplementedError()
+            if self.vtype.is_bool():
+                code_lines = []
+                code_lines.extend(l_code_lines)
+                uid = UID.get_uid()
+                code_lines.append(CodeLine("ISLAZY{}:".format(uid),
+                                           save_result=False))
+                if self.op == OR:
+                    code_lines.append(CodeLine(
+                        "br i1 {}, label %LAZY{}, label %WORK{}".format(
+                            lval, uid, uid), save_result=False))
+                elif self.op == AND:
+                    code_lines.append(CodeLine(
+                        "br i1 {}, label %WORK{}, label %LAZY{}".format(
+                            lval, uid, uid), save_result=False))
+                else:
+                    raise CompilationError('invalid operator', self.ctx)
+                code_lines.append(CodeLine("WORK{}:".format(uid),
+                                           save_result=False))
+                code_lines.extend(r_code_lines)
+                code_lines.append(CodeLine('br label %LAZY{}'.format(uid),
+                                           save_result=False))
+                code_lines.append(CodeLine("LAZY{}:".format(uid),
+                                           save_result=False))
+                code_lines.append(CodeLine(
+                    "phi i1 [{lval}, %ISLAZY{uid}], [{rval}, %WORK{uid}]"
+                    .format(lval=lval, rval=rval, uid=uid)
+                ))
+            elif self.vtype.is_string():
+                # TODO: implement
+                raise NotImplementedError()
+            else:
+                raise NotImplementedError()
         else:
             code_lines.append(CodeLine(instr.format(lval, rval)))
         return code_lines
@@ -216,7 +248,7 @@ class ECall(Expr):
             ret += arg.to_str(ident + 2)
         return ret
 
-    def get_code_lines(self, program: 'Program', keep_ref=False)\
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         code_lines = []
         arg_strings = []
@@ -294,7 +326,7 @@ class Constants(object):
         name = self.constants[val]
         size = len(val) + 1  # +1 because of null byte.
 
-        llval = "".join(["\\"+str(hex(c))[2:].rjust(2, "0").upper()
+        llval = "".join(["\\" + str(hex(c))[2:].rjust(2, "0").upper()
                          for c in val]) + "\\00"
         line = "{name} = internal constant[{size} x i8] c\"{val}\"".format(
             name=name, size=size, val=llval
@@ -491,7 +523,7 @@ class SIfElse(Stmt):
         # End block
         brlines = br_block(next_code_block)
         end_block = CodeBlock(brlines, comment="end-if")
-        
+
         # True blocks
         true_blocks = self.ifstmt.get_code_blocks(program, end_block)
 
@@ -553,7 +585,8 @@ class SWhile(Stmt):
         cond_lines = self.cond.get_code_lines(program)
 
         brlines = cond_br_block(cond_lines[-1], code_blocks[0], end_block)
-        cond_block = CodeBlock(cond_lines + brlines, False, comment="cond-while")
+        cond_block = CodeBlock(cond_lines + brlines, False,
+                               comment="cond-while")
 
         # Jumping to condition from first code block.
         br_cond_lines = br_block(cond_block)
@@ -561,7 +594,8 @@ class SWhile(Stmt):
         first_code_block.codelines.extend(br_cond_lines)
 
         # Concateneting code blocks.
-        code_blocks = [first_code_block] + code_blocks + [cond_block] + [end_block]
+        code_blocks = [first_code_block] + code_blocks + [cond_block] + [
+            end_block]
         return code_blocks
 
 
@@ -667,7 +701,7 @@ class Block(Stmt):
             vtype = self.vars.vars[varname]
             if vtype.is_intboolstring():
                 init_codelines.append(CodeLine("{var} = alloca {type}".format(
-                    var=block_varname,type=vtype.llvm_type()),
+                    var=block_varname, type=vtype.llvm_type()),
                     save_result=False))
                 if varname in self.vars.arguments:
                     init_codelines.append(CodeLine(
@@ -715,11 +749,12 @@ class Function(object):
             else:
                 raise NotImplementedError()
 
-        rtype = program.last_vars.get_variable(self.name, None).rtype.llvm_type()
+        rtype = program.last_vars.get_variable(self.name,
+                                               None).rtype.llvm_type()
 
         begin_lines = [
             "define {} @f_{}({}) {{".format(rtype, self.name,
-                                         ", ".join(arg_strings)),
+                                            ", ".join(arg_strings)),
         ]
 
         end_lines = [
