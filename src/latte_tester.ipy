@@ -8,10 +8,19 @@ def run_test(file: str) -> bool:
         return "COMPILE ERROR"
 
     # TODO: run program
-    o = !{filebase}.o >{filebase}.actout
-    if(o):
+    files = !ls {dir}
+    if (filebase + ".input").split('/')[-1] in files:
+        o = !{filebase}.o < {filebase}.input > {filebase}.actout
+    else:
+        o = !{filebase}.o > {filebase}.actout
+    if (o):
         raise ValueError(str(o))
+    if (filebase + ".output").split('/')[-1] in files:
+        diff = !diff {filebase}.output {filebase}.actout
+        if diff:
+            return "OUTPUT DIFF ERROR"
     return "OK"
+
 
 def main(dir="lattests/bad/", expected_good=True):
     files = !ls {dir}
@@ -19,8 +28,8 @@ def main(dir="lattests/bad/", expected_good=True):
     ok = 0
     err = 0
     for test in tests:
-        print(dir+test, end="")
-        res = run_test(dir + test)
+        print(dir + test, end="")
+        res = run_test(dir, dir + test)
         if res == "OK":
             ok += 1
             print(" OK")
@@ -29,7 +38,7 @@ def main(dir="lattests/bad/", expected_good=True):
                 print()
         else:
             err += 1
-            print(" ERROR")
+            print(" " + res)
             if expected_good and DEBUG:
                 !cat {dir + test}
                 print()
