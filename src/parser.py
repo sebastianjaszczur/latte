@@ -1,44 +1,10 @@
-import os
-import sys
-from ast import literal_eval
-
-from antlr4 import InputStream, CommonTokenStream
-from antlr4.tree.Tree import TerminalNodeImpl
-
-from LatteLexer import LatteLexer
 from LatteParser import LatteParser
 from LatteVisitor import LatteVisitor
-from typedtree import Program, VFun, VariablesBlock, Block, Function, Stmt, \
-    Expr, EConst, EOp, ECall, EVar, VRef, SAssi, EmptyStmt, SIfElse, SWhile, \
-    SReturn, VInt, VBool, VString, ADD, SUB, op_array, MUL, DIV, MOD, AND, OR, \
-    LT, LE, GT, GE, EQ, NE
-
-# TODO: Better error handling
-
-HELP = "Run this program with file.ins argument only."
-EXTENSION_LATTE = ".lat"
-EXTENSION_LL = ".ll"
-EXTENSION_BC = ".bc"
-
-# TODO: BEFORE/AFTER refactor
-BEFORE = """
-@dnl = internal constant [4 x i8] c"%d\\0A\\00"
-
-declare i32 @printf(i8*, ...)
-
-define void @printInt(i32 %x) {
-  %t0 = getelementptr [4 x i8], [4 x i8]* @dnl, i32 0, i32 0
-  call i32 (i8*, ...) @printf(i8* %t0, i32 %x)
-  ret void
-}
-
-define i32 @main() {
-  """
-
-AFTER = """
-  ret i32 0
-}
-"""
+from typedtree import Program, VariablesBlock, Function, Block, Stmt, EOp, \
+    EConst, SAssi, EVar, EmptyStmt, SIfElse, SReturn, \
+    SWhile, op_array, ECall
+from misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, OR, VRef, \
+    VFun, VBool, VInt, VString
 
 
 class LLVMVariableException(Exception):
@@ -182,7 +148,6 @@ class LLVMVisitor(LatteVisitor):
             self.program.current_function)
         assert isinstance(funtype, VFun)
         rtype = funtype.rtype
-        print("Waaat", ctx.expr(), rtype)
         if ctx.expr():
             rexpr = self.visit(ctx.expr())
             if rexpr.vtype == rtype:
@@ -333,85 +298,3 @@ class LLVMVisitor(LatteVisitor):
     def visitArg(self, ctx: LatteParser.ArgContext):
         # it should not happen
         assert False
-
-
-def print_parse_tree(tree, indent_level=0):
-    if isinstance(tree, TerminalNodeImpl):
-        return
-    print(("| " * indent_level) + "> " + str(tree.__class__.__name__),
-          str(tree.getText()))
-    for c in tree.getChildren():
-        print_parse_tree(c, indent_level + 1)
-
-
-def generate_ll(sourcefile, outputfile):
-    inputstrewam = InputStream(sourcefile.read())
-    lexer = LatteLexer(inputstrewam)
-    tokenstream = CommonTokenStream(lexer)
-    parser = LatteParser(tokenstream)
-    tree = parser.program()
-
-    print("Parse tree")
-    print_parse_tree(tree)
-    print()
-
-    print("Visiting")
-    program = LLVMVisitor().visit(tree)
-    assert isinstance(program, Program)
-    print(program)  # , file=outputfile)
-    print()
-
-    print("CODE")
-    program.do_checks()
-    print(program.constants.get_source())
-    print()
-    for function in program.functions.values():
-        print(function.get_source(program))
-        print()
-        print()
-    print("define i32 @main() {")
-    print("  MAIN:")
-    print("    %ret = call i32 @f_main()")
-    print("    ret i32 %ret")
-    print("}")
-
-    # print(BEFORE)#, file=outputfile)
-    # print code
-    # print(AFTER)#, file=outputfile)
-
-
-def main():
-    if len(sys.argv) != 2:
-        print(HELP, file=sys.stderr)
-        print("There is a wrong number of arguments.", file=sys.stderr)
-        sys.exit(1)
-    sourcename = str(sys.argv[1])
-
-    if not sourcename.endswith(EXTENSION_LATTE):
-        print(HELP, file=sys.stderr)
-        print("The file extension is not recognized.", file=sys.stderr)
-        sys.exit(2)
-    basename = sourcename[:-len(EXTENSION_LATTE)]
-    llname = basename + EXTENSION_LL
-
-    print("Compiling {} to {}".format(sourcename, llname))
-    try:
-        with open(sourcename, "r") as sourcefile:
-            with open(llname, "w") as llfile:
-                generate_ll(sourcefile, llfile)
-    except LLVMVariableException as ve:
-        firstToken = ve.ctx.parser.getTokenStream().get(
-            ve.ctx.getSourceInterval()[0])
-        print("line {}:{} variable not declared before: '{}'".format(
-            firstToken.line, firstToken.column, ve.name),
-            file=sys.stderr)
-        os.remove(llname)
-        exit(3)
-
-    os.system("llvm-as {}".format(llname))
-
-    print("Done.")
-
-
-if __name__ == '__main__':
-    main()
