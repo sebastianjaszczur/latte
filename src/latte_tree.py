@@ -271,13 +271,11 @@ class VariablesBlock(object):
         self.upper = upper_block
         self.uid = UID.get_uid()
 
-    def add_variable(self, name: str, type: VType, ctx, argument=False):
+    def add_variable(self, name: str, type: VType, ctx):
         assert isinstance(type, VType)
         if name in self.vars:
             raise CompilationError("variable already exists", ctx)
         self.vars[name] = type
-        if argument:
-            self.arguments.append(name)
 
     def get_variable(self, name: str, ctx) -> VType:
         if name in self.vars:
@@ -374,8 +372,8 @@ class Program(object):
         return res
 
     def do_checks(self):
-        # TODO: check if main exists AND if it has correct type/args.
-        # TODO: check if every fucntion is ending
+        if 'main' not in self.globals:
+            raise CompilationError('main not defined', None)
         pass
 
     def get_source(self):
@@ -675,8 +673,6 @@ class Block(Stmt):
                     code_blocks = []
                 code_blocks = new_code_blocks + code_blocks
 
-        # Make initialization code block
-
         init_codelines = []
         for varname in self.vars.vars:
             block_varname = self.vars.get_variable_name(varname, None)
@@ -685,11 +681,6 @@ class Block(Stmt):
                 init_codelines.append(CodeLine("{var} = alloca {type}".format(
                     var=block_varname, type=vtype.llvm_type()),
                     save_result=False))
-                if varname in self.vars.arguments:
-                    init_codelines.append(CodeLine(
-                        "store {type} %{var}, {type}* {b_var}".format(
-                            var=varname, b_var=block_varname,
-                            type=vtype.llvm_type()), save_result=False))
             else:
                 raise NotImplementedError()
         if code_blocks:
@@ -699,10 +690,11 @@ class Block(Stmt):
 
 
 class Function(object):
-    def __init__(self, name: str, block: Block, ctx):
+    def __init__(self, name: str, arg_vars: VariablesBlock, block: Block, ctx):
         self.name = name
         self.block = block
         self.ctx = ctx
+        self.arg_vars = arg_vars
 
     def to_str(self, ident=0):
         ret = " " * ident + "funtion {}:\n".format(self.name)
@@ -710,12 +702,33 @@ class Function(object):
         return ret
 
     def get_code_blocks(self, program: Program) -> List['CodeBlock']:
-        return self.block.get_code_blocks(program)
+        code_blocks = self.block.get_code_blocks(program)
+
+        # Make initialization code block
+        init_codelines = []
+        for varname in self.arg_vars.vars:
+            reg_varname = self.arg_vars.get_variable_name(varname, None)
+            vtype = self.arg_vars.vars[varname]
+            if vtype.is_intboolstring():
+                init_codelines.append(CodeLine("{var} = alloca {type}".format(
+                    var=reg_varname, type=vtype.llvm_type()),
+                    save_result=False))
+                init_codelines.append(CodeLine(
+                    "store {type} %{var}, {type}* {b_var}".format(
+                        var=varname, b_var=reg_varname,
+                        type=vtype.llvm_type()), save_result=False))
+            else:
+                raise NotImplementedError()
+        if code_blocks:
+            init_codelines.extend(br_block(code_blocks[0]))
+        init_block = CodeBlock(init_codelines, comment="init")
+
+        return [init_block] + code_blocks
 
     def get_source(self, program: Program):
         code_blocks = self.get_code_blocks(program)
 
-        if program.last_vars.get_variable(self.name, self.ctx).rtype.is_void():
+        if program.globals.get_variable(self.name, self.ctx).rtype.is_void():
             if not code_blocks:
                 code_blocks.append(CodeBlock([], ending=True))
             codeline = CodeLine('ret void', save_result=False)
@@ -724,15 +737,14 @@ class Function(object):
             raise CompilationError("function doesn't return", self.ctx)
 
         arg_strings = []
-        for argname in self.block.vars.arguments:
-            vtype = self.block.vars.get_variable(argname, None)
+        for argname in self.arg_vars.vars:
+            vtype = self.arg_vars.get_variable(argname, None)
             if vtype.is_intboolstring():
                 arg_strings.append('{} %{}'.format(vtype.llvm_type(), argname))
             else:
                 raise NotImplementedError()
 
-        rtype = program.last_vars.get_variable(self.name,
-                                               None).rtype.llvm_type()
+        rtype = program.globals.get_variable(self.name, None).rtype.llvm_type()
 
         begin_lines = [
             "define {} @f_{}({}) {{".format(rtype, self.name,

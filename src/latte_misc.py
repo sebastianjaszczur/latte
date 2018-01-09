@@ -49,8 +49,11 @@ class CompilationError(Exception):
         self.msg = msg
 
     def __str__(self):
-        return "line {}:{} {}:\n{}".format(
-            self.line, self.column, self.msg, self.text)
+        if self.text:
+            return "line {}:{} {}:\n{}".format(self.line, self.column, self.msg,
+                                               self.text)
+        else:
+            return "line {}:{} {}\n".format(self.line, self.column, self.msg)
 
 
 class ErrorRaiser(ErrorListener):

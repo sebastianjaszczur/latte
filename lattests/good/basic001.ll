@@ -4,31 +4,43 @@ declare void @f_error()
 declare i32 @f_readInt()
 declare i8* @f_readString()
 declare i8* @op_addString(i8*, i8*)
-declare i32 @op_eqString(i8*, i8*)
-declare i32 @op_neString(i8*, i8*)
 
 define i32 @f_main() {
-  L23:  ; init
-    %b2_x = alloca i1
-    br label %L20
+  L14:  ; init
+    br label %L12
 
-  L20:  ; assignment
-    %v7 = getelementptr  i1, i1* %b2_x, i32 0
-    %v8 = add i1 0, 1
-    br label %ISLAZY10
-    ISLAZY10:
-    br i1 %v8, label %LAZY10, label %WORK10
-    WORK10:
-    %v9 = add i1 0, 0
-    br label %LAZY10
-    LAZY10:
-    %v17 = phi i1 [%v8, %ISLAZY10], [%v9, %WORK10]
-    store i1 %v17, i1* %v7
-    br label %L6
+  L12:  ; init
+    br label %L10
 
-  L6:  ; return
-    %v4 = add i32 0, 0
-    ret i32 %v4
+  L10:  ; return
+    %v8 = add i32 0, 2
+    ret i32 %v8
+}
+
+define void @f_f(i32 %x) {
+  L33:  ; init
+    %b5_x = alloca i32
+    store i32 %x, i32* %b5_x
+    br label %L29
+
+  L29:  ; init
+    %b6_x = alloca i32
+    br label %L26
+
+  L26:  ; assignment
+    %v19 = getelementptr  i32, i32* %b6_x, i32 0
+    %v20 = getelementptr  i32, i32* %b5_x, i32 0
+    %v21 = load i32, i32* %v20
+    %v22 = add i32 0, 2
+    %v23 = add i32 %v21, %v22
+    store i32 %v23, i32* %v19
+    br label %L18
+
+  L18:  ; expr
+    %v15 = getelementptr  i32, i32* %b6_x, i32 0
+    %v16 = load i32, i32* %v15
+    call void @f_printInt(i32 %v16)
+    ret void
 }
 
 define i32 @main() {

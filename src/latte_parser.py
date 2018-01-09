@@ -37,23 +37,25 @@ class LLVMVisitor(LatteVisitor):
     def visitFundef(self, ctx: LatteParser.FundefContext):
         name = str(ctx.IDENT())
 
-        args = VariablesBlock(self.program.globals)
+        vars = VariablesBlock(self.program.globals)
         for arg in ctx.arg():
-            args.add_variable(
+            vars.add_variable(
                 str(arg.IDENT()),
-                self.program.name_to_type(str(arg.vtype().IDENT()), arg), arg,
-                argument=True)
+                self.program.name_to_type(str(arg.vtype().IDENT()), arg), arg)
 
+        self.program.last_vars = vars
         self.program.current_function = name
-        block = self.visitBlock(ctx.block(), args)
-        self.program.current_function = None
-        function = Function(name, block, ctx)
 
+        block = self.visitBlock(ctx.block())
+
+        self.program.current_function = None
+        self.program.last_vars = None
+
+        function = Function(name, vars, block, ctx)
         self.program.functions[name] = function
 
-    def visitBlock(self, ctx: LatteParser.BlockContext, vars=None):
-        if vars is None:
-            vars = VariablesBlock(self.program.last_vars)
+    def visitBlock(self, ctx: LatteParser.BlockContext):
+        vars = VariablesBlock(self.program.last_vars)
         last_vars = self.program.last_vars
         self.program.last_vars = vars
 

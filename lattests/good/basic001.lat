@@ -1,4 +1,8 @@
 int main() {
-	boolean x = true || false;
-	return 0;
+	return 2;
+}
+
+void f(int x) {
+	int x = x + 2;
+	printInt(x);
 }
