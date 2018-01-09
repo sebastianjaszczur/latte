@@ -7,7 +7,6 @@ def run_test(dir: str, file: str) -> bool:
     if "ERROR" in o:
         return "COMPILE ERROR"
 
-    # TODO: run program
     files = !ls {dir}
     if (filebase + ".input").split('/')[-1] in files:
         o = !{filebase}.o < {filebase}.input > {filebase}.actout

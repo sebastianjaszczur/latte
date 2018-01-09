@@ -9,14 +9,12 @@ from LatteParser import LatteParser
 from latte_parser import LLVMVariableException, LLVMVisitor
 from latte_misc import ErrorRaiser, CompilationError
 
-# TODO: Better error handling
-
 HELP = "Run this program with file.late argument only."
 EXTENSION_LATTE = ".lat"
 EXTENSION_LL = ".ll"
 EXTENSION_BC = ".bc"
 
-DEBUG = True
+DEBUG = False
 
 
 def print_debug(*args, **kwargs):
@@ -56,8 +54,6 @@ def generate_ll(sourcefile, outputfile):
 
         print_debug("Visiting")
         program = LLVMVisitor().visit(tree)
-        print_debug(program)
-        print_debug()
 
         print_debug("CODE")
         program.do_checks()
@@ -78,31 +74,22 @@ def generate_ll(sourcefile, outputfile):
 
 def main():
     if len(sys.argv) != 2:
-        print_debug(HELP, file=sys.stderr)
-        print_debug("There is a wrong number of arguments.", file=sys.stderr)
+        print_err(HELP, file=sys.stderr)
+        print_err("There is a wrong number of arguments.", file=sys.stderr)
         sys.exit(1)
     sourcename = str(sys.argv[1])
 
     if not sourcename.endswith(EXTENSION_LATTE):
-        print_debug(HELP, file=sys.stderr)
-        print_debug("The file extension is not recognized.", file=sys.stderr)
+        print_err(HELP, file=sys.stderr)
+        print_err("The file extension is not recognized.", file=sys.stderr)
         sys.exit(2)
     basename = sourcename[:-len(EXTENSION_LATTE)]
     llname = basename + EXTENSION_LL
 
     print_debug("Compiling {} to {}".format(sourcename, llname))
-    try:
-        with open(sourcename, "r") as sourcefile:
-            with open(llname, "w") as llfile:
-                generate_ll(sourcefile, llfile)
-    except LLVMVariableException as ve:
-        firstToken = ve.ctx.parser.getTokenStream().get(
-            ve.ctx.getSourceInterval()[0])
-        print_debug("line {}:{} variable not declared before: '{}'".format(
-            firstToken.line, firstToken.column, ve.name),
-            file=sys.stderr)
-        os.remove(llname)
-        exit(3)
+    with open(sourcename, "r") as sourcefile:
+        with open(llname, "w") as llfile:
+            generate_ll(sourcefile, llfile)
 
     print_debug("Done.")
 

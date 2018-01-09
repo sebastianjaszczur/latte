@@ -22,6 +22,7 @@ def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType' = None) \
         if op == MUL:
             return 'mul i32 {}, {}', VInt()
         elif op == DIV:
+            # TODO: do something with division by zero.
             return 'sdiv i32 {}, {}', VInt()
         elif op == MOD:
             return 'srem i32 {}, {}', VInt()
@@ -63,10 +64,6 @@ class Expr(object):
     def __init__(self, vtype: VType):
         self.vtype = vtype
 
-    def to_str(self, ident=0):
-        ret = " " * ident + "Expr\n"
-        return ret
-
     def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         raise NotImplementedError()
@@ -88,10 +85,6 @@ class EConst(Expr):
             raise ValueError("should encounter bytes, not string value")
         self.vtype = vtype
         self.ctx = ctx
-
-    def to_str(self, ident=0):
-        ret = " " * ident + "const {}:{}\n".format(self.value, self.vtype)
-        return ret
 
     def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
@@ -122,10 +115,6 @@ class EVar(Expr):
         self.vtype = vtype
         self.ctx = ctx
 
-    def to_str(self, ident=0):
-        ret = " " * ident + "var {}:{}\n".format(self.name, self.vtype)
-        return ret
-
     def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         vtype_unref = self.vtype.unref()
@@ -152,11 +141,6 @@ class EUnaryOp(Expr):
         self.op = op
         self.ctx = ctx
 
-    def to_str(self, ident=0):
-        ret = " " * ident + "op {}:{}\n".format(self.op, self.vtype)
-        ret += self.expr.to_str(ident + 2)
-        return ret
-
     def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         code_lines = self.expr.get_code_lines(program)
@@ -174,12 +158,6 @@ class EOp(Expr):
         self.rexpr = rexpr
         self.op = op
         self.ctx = ctx
-
-    def to_str(self, ident=0):
-        ret = " " * ident + "op {}:{}\n".format(self.op, self.vtype)
-        ret += self.lexpr.to_str(ident + 2)
-        ret += self.rexpr.to_str(ident + 2)
-        return ret
 
     def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
@@ -240,12 +218,6 @@ class ECall(Expr):
         self.argtypes = argtypes
         self.args = args
 
-    def to_str(self, ident=0):
-        ret = " " * ident + "call {}:{}\n".format(self.name, self.vtype)
-        for arg in self.args:
-            ret += arg.to_str(ident + 2)
-        return ret
-
     def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         code_lines = []
@@ -293,13 +265,6 @@ class VariablesBlock(object):
     def __iter__(self):
         for var in self.vars:
             yield var
-
-    def to_str(self, ident=0):
-        res = ""
-        for name in self:
-            res += " " * ident + "{}: {}\n".format(
-                name, self.get_variable(name, None))
-        return res or (" " * ident + "--none--\n")
 
 
 class Constants(object):
@@ -358,18 +323,6 @@ class Program(object):
             return self.types[name]
         raise CompilationError("type not found", ctx)
 
-    def __str__(self):
-        res = "Program:\n"
-        res += "  Classes:\n"
-        for type in self.types:
-            res += "    {}\n".format(type)
-        res += "  Globals:\n"
-        res += self.globals.to_str(4)
-        res += "  Functions:\n"
-        for fun in self.functions:
-            res += self.functions[fun].to_str(4)
-        return res
-
     def do_checks(self):
         if 'main' not in self.globals.vars:
             raise CompilationError('main not defined', None)
@@ -400,10 +353,6 @@ class Program(object):
 
 
 class Stmt(object):
-    def to_str(self, ident=0):
-        ret = " " * ident + "Generic Stmt\n"
-        return ret
-
     def get_code_blocks(
             self, program: Program,
             next_code_block: 'CodeBlock' = None) -> List['CodeBlock']:
@@ -430,10 +379,6 @@ def cond_br_block(cond: 'CodeLine', true_block: 'CodeBlock',
 
 
 class EmptyStmt(Stmt):
-    def to_str(self, ident=0):
-        ret = " " * ident + "EmptyStmt\n"
-        return ret
-
     def get_code_blocks(
             self, program: Program,
             next_code_block: 'CodeBlock' = None) -> List['CodeBlock']:
@@ -446,12 +391,6 @@ class SAssi(Stmt):
         self.texpr = texpr
         self.vexpr = vexpr
         self.ctx = ctx
-
-    def to_str(self, ident=0):
-        ret = " " * ident + "Assi\n"
-        ret += self.texpr.to_str(ident + 2)
-        ret += self.vexpr.to_str(ident + 2)
-        return ret
 
     def get_code_blocks(
             self, program: Program,
@@ -484,13 +423,6 @@ class SIfElse(Stmt):
         self.ifstmt = ifstmt
         # It will be set - maybe EmptyStmt
         self.elsestmt = elsestmt
-
-    def to_str(self, ident=0):
-        ret = " " * ident + "IfElse\n"
-        ret += self.cond.to_str(ident + 2)
-        ret += self.ifstmt.to_str(ident + 2)
-        ret += self.elsestmt.to_str(ident + 2)
-        return ret
 
     def get_code_blocks(
             self, program: Program,
@@ -532,12 +464,6 @@ class SWhile(Stmt):
     def __init__(self, cond: Expr, body: Stmt):
         self.cond = cond
         self.body = body
-
-    def to_str(self, ident=0):
-        ret = " " * ident + "While\n"
-        ret += self.cond.to_str(ident + 2)
-        ret += self.body.to_str(ident + 2)
-        return ret
 
     def get_code_blocks(
             self, program: Program,
@@ -583,12 +509,6 @@ class SWhile(Stmt):
 class SReturn(Stmt):
     def __init__(self, expr=None):
         self.expr = expr
-
-    def to_str(self, ident=0):
-        ret = " " * ident + "Return\n"
-        if self.expr is not None:
-            ret += self.expr.to_str(ident + 2)
-        return ret
 
     def get_code_blocks(
             self, program: Program,
@@ -648,18 +568,6 @@ class Block(Stmt):
         self.stmts = []
         self.uid = UID.get_uid()
 
-    def to_str(self, ident=0, header=True):
-        if header:
-            ret = " " * ident + "block:\n"
-        else:
-            ret = ""
-        ret += " " * ident + "  Vars:\n"
-        ret += self.vars.to_str(ident + 4)
-        ret += " " * ident + "  Stmts:\n"
-        for stmt in self.stmts:
-            ret += stmt.to_str(ident + 4)
-        return ret
-
     def get_code_blocks(
             self, program: Program,
             next_code_block: 'CodeBlock' = None) -> List['CodeBlock']:
@@ -696,11 +604,6 @@ class Function(object):
         self.block = block
         self.ctx = ctx
         self.arg_vars = arg_vars
-
-    def to_str(self, ident=0):
-        ret = " " * ident + "funtion {}:\n".format(self.name)
-        ret += self.block.to_str(ident + 2, header=False)
-        return ret
 
     def get_code_blocks(self, program: Program) -> List['CodeBlock']:
         code_blocks = self.block.get_code_blocks(program)

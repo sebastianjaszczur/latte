@@ -87,8 +87,6 @@ WS
 COMMENT_SL
 	: ('#' | '//') ~( '\r' | '\n' )* -> skip;
 
-
-// TODO: fix ending multiline comment
 COMMENT_ML
 	: ('/*' ( (~'*') | ( '*' (~'/') ) )* '*/') -> skip;
 

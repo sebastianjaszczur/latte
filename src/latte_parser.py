@@ -231,7 +231,6 @@ class LLVMVisitor(LatteVisitor):
         return EOp(vtype, lexpr, rexpr, op, ctx)
 
     def visitEand(self, ctx: LatteParser.EandContext):
-        # TODO: conditions should be lazy
         op = AND
         lexpr = self.visit(ctx.expr(0))
         rexpr = self.visit(ctx.expr(1))
@@ -239,7 +238,6 @@ class LLVMVisitor(LatteVisitor):
         return EOp(vtype, lexpr, rexpr, op, ctx)
 
     def visitEor(self, ctx: LatteParser.EandContext):
-        # TODO: conditions should be lazy
         op = OR
         lexpr = self.visit(ctx.expr(0))
         rexpr = self.visit(ctx.expr(1))

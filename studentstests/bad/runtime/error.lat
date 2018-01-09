@@ -1,5 +1,5 @@
 // Author: Tomasz Wysocki 277696
 int main() {
-    error();
+    int x = 3 / 0;
     return 0;
 }
