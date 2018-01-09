@@ -1,11 +1,10 @@
 from LatteParser import LatteParser
 from LatteVisitor import LatteVisitor
 from latte_tree import Program, VariablesBlock, Function, Block, Stmt, EOp, \
-    EConst, SAssi, EVar, EmptyStmt, SIfElse, SReturn, \
-    SWhile, op_array, ECall, EUnaryOp
-from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, OR, \
-    VRef, \
-    VFun, VBool, VInt, VString, CompilationError, NEG
+    EConst, SAssi, EVar, EmptyStmt, SIfElse, SReturn, SWhile, op_array, ECall, \
+    EUnaryOp
+from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
+    OR, VRef, VFun, VBool, VInt, VString, CompilationError, NEG
 
 
 class LLVMVariableException(Exception):
