@@ -45,6 +45,7 @@ class CompilationError(Exception):
         else:
             self.line = ctx.start.line
             self.column = ctx.start.column
+            # TODO: add whitespaces to this text.
             self.text = ctx.getText()
         self.msg = msg
 

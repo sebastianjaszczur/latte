@@ -62,10 +62,6 @@ def generate_ll(sourcefile, outputfile):
         print_err("ERROR")
         print_err(str(e))
         exit(1)
-    except Exception as e:
-        print_err("ERROR")
-        print_err("unexpected exception")
-        raise
 
     print_err("OK")
     print_debug(source)
@@ -87,9 +83,15 @@ def main():
     llname = basename + EXTENSION_LL
 
     print_debug("Compiling {} to {}".format(sourcename, llname))
-    with open(sourcename, "r") as sourcefile:
-        with open(llname, "w") as llfile:
-            generate_ll(sourcefile, llfile)
+
+    try:
+        with open(sourcename, "r") as sourcefile:
+            with open(llname, "w") as llfile:
+                generate_ll(sourcefile, llfile)
+    except Exception:
+        print_err("ERROR")
+        print_err("unexpected exception during compilation:")
+        raise
 
     print_debug("Done.")
 
