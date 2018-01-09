@@ -37,10 +37,10 @@ class UID(object):
 
 
 class CompilationError(Exception):
-    def __init__(self, msg, ctx):
+    def __init__(self, msg, ctx=None, line=0, column=0):
         if ctx is None:
-            self.line = 0
-            self.column = 0
+            self.line = line
+            self.column = column
             self.text = ""
         else:
             self.line = ctx.start.line
@@ -58,7 +58,7 @@ class CompilationError(Exception):
 
 class ErrorRaiser(ErrorListener):
     def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        raise CompilationError(line, column, msg)
+        raise CompilationError(msg, line=line, column=column)
 
 
 class VType(object):
