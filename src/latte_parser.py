@@ -32,7 +32,7 @@ class LLVMVisitor(LatteVisitor):
              for arg in ctx.arg()])
 
         self.program.globals.add_variable(name, VFun(return_type, arg_types),
-                                          ctx, declare=True,)
+                                          ctx)
 
     def visitFundef(self, ctx: LatteParser.FundefContext):
         name = str(ctx.IDENT())
@@ -42,7 +42,7 @@ class LLVMVisitor(LatteVisitor):
             args.add_variable(
                 str(arg.IDENT()),
                 self.program.name_to_type(str(arg.vtype().IDENT()), arg), arg,
-                declare=True, argument=True)
+                argument=True)
 
         self.program.current_function = name
         block = self.visitBlock(ctx.block(), args)
@@ -56,13 +56,6 @@ class LLVMVisitor(LatteVisitor):
             vars = VariablesBlock(self.program.last_vars)
         last_vars = self.program.last_vars
         self.program.last_vars = vars
-
-        for stmt in ctx.stmt():
-            if not isinstance(stmt, LatteParser.SdeclContext):
-                continue
-            vtype = self.program.name_to_type(str(stmt.vtype().IDENT()), stmt)
-            for item in stmt.item():
-                vars.add_variable(str(item.IDENT()), vtype, stmt)
 
         block = Block(vars)
 
@@ -109,6 +102,14 @@ class LLVMVisitor(LatteVisitor):
         return SAssi(texpr, vexpr, ctx)
 
     def visitSdecl(self, ctx: LatteParser.SdeclContext):
+        '''
+        for stmt in ctx.stmt():
+            if not isinstance(stmt, LatteParser.SdeclContext):
+                continue
+            vtype = self.program.name_to_type(str(stmt.vtype().IDENT()), stmt)
+            for item in stmt.item():
+                vars.add_variable(str(item.IDENT()), vtype, stmt)
+        '''
         vtype = self.program.name_to_type(str(ctx.vtype().IDENT()), ctx)
         if not vtype.is_intboolstring():
             raise CompilationError("type not declarable", ctx)
@@ -120,12 +121,12 @@ class LLVMVisitor(LatteVisitor):
                 vexpr = self.visit(expr)
             else:
                 vexpr = vtype.get_default_expr()
+            self.program.last_vars.add_variable(name, vtype, item)
             texpr = EVar(self.program.last_vars.get_variable_name(name, item),
                          VRef(vtype), ctx)
             if not isinstance(texpr.vtype, VRef):
                 raise CompilationError("invalid declaration target", ctx)
             tstmts.append(SAssi(texpr, vexpr, item))
-            self.program.last_vars.declare(name)
         return tstmts
 
     def visitSexpr(self, ctx: LatteParser.SexprContext):

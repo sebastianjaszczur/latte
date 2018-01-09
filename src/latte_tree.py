@@ -268,27 +268,20 @@ class VariablesBlock(object):
     def __init__(self, upper_block: 'VariablesBlock' = None):
         self.vars = dict()
         self.arguments = []
-        self.declared = set()
         self.upper = upper_block
         self.uid = UID.get_uid()
 
-    def add_variable(self, name: str, type: VType, ctx, declare=False,
-                     argument=False):
+    def add_variable(self, name: str, type: VType, ctx, argument=False):
         assert isinstance(type, VType)
         if name in self.vars:
             raise CompilationError("variable already exists", ctx)
         self.vars[name] = type
         if argument:
             self.arguments.append(name)
-        if declare:
-            self.declare(name)
 
     def get_variable(self, name: str, ctx) -> VType:
         if name in self.vars:
-            if name in self.declared:
-                return self.vars[name]
-            else:
-                raise CompilationError("variable not yet declared", ctx)
+            return self.vars[name]
         if self.upper is not None:
             return self.upper.get_variable(name, ctx)
         raise CompilationError("variable not yet declared", ctx)
@@ -299,10 +292,6 @@ class VariablesBlock(object):
         if self.upper is not None:
             return self.upper.get_variable_name(name, ctx)
         raise CompilationError("variable doesn't exist", ctx)
-
-    def declare(self, name: str):
-        assert name in self.vars
-        self.declared.add(name)
 
     def __iter__(self):
         for var in self.vars:
@@ -360,16 +349,12 @@ class Program(object):
         self.functions = dict()  # name -> Function
         self.current_function = None
 
-        self.globals.add_variable("printInt", VFun(VVoid(), (VInt(),)), None,
-                                  declare=True)
+        self.globals.add_variable("printInt", VFun(VVoid(), (VInt(),)), None)
         self.globals.add_variable("printString", VFun(VVoid(), (VString(),)),
-                                  None, declare=True)
-        self.globals.add_variable("error", VFun(VVoid(), tuple()), None,
-                                  declare=True)
-        self.globals.add_variable("readInt", VFun(VInt(), tuple()), None,
-                                  declare=True)
-        self.globals.add_variable("readString", VFun(VString(), tuple()), None,
-                                  declare=True)
+                                  None)
+        self.globals.add_variable("error", VFun(VVoid(), tuple()), None)
+        self.globals.add_variable("readInt", VFun(VInt(), tuple()), None)
+        self.globals.add_variable("readString", VFun(VString(), tuple()), None)
 
     def name_to_type(self, name: str, ctx) -> VType:
         if name in self.types:
