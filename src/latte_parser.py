@@ -123,6 +123,8 @@ class LLVMVisitor(LatteVisitor):
                 vexpr = self.visit(expr)
             else:
                 vexpr = vtype.get_default_expr()
+            if vtype != vexpr.vtype:
+                raise CompilationError("invalid assignment type", item)
             self.program.last_vars.add_variable(name, vtype, item)
             texpr = EVar(self.program.last_vars.get_variable_name(name, item),
                          VRef(vtype), ctx)

@@ -51,14 +51,15 @@ def main(dir="lattests/bad/", expected_good=True):
     return all - expected
 
 if __name__ == "__main__":
-    for good_dir in ["lattests/good/", "studentstests/good/basic/"]:
-        main(good_dir, True)
-
-    print()
-    print()
-    print()
-
     not_expected = 0
+    for good_dir in ["lattests/good/", "studentstests/good/basic/"]:
+        not_expected += main(good_dir, True)
+
+    print()
+    print()
+    print()
+
+
     for bad_dir in ["lattests/bad/", "studentstests/bad/semantic/"]:
         not_expected += main(bad_dir, False)
 
