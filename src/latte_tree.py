@@ -7,7 +7,7 @@ from latte_misc import MUL, DIV, MOD, ADD, \
 def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType' = None) \
         -> (str, 'VType'):
     if vtype2 is None:
-        # (a, _) -> b
+        # (a, None) -> b
         if vtype1.is_int() and op == SUB:
             return 'sub i32 0, {}', VInt()
         if vtype1.is_bool() and op == NEG:
@@ -53,13 +53,8 @@ def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType' = None) \
         elif op == OR:
             return SPECIAL, VBool()
     elif vtype1.is_string():
-        # TODO: Add more string comparisons.
         if op == ADD:
             return 'call i8* @op_addString(i8* {}, i8* {})', VString()
-        elif op == EQ:
-            return SPECIAL, VBool()
-        elif op == NE:
-            return SPECIAL, VBool()
     # Other
     raise CompilationError("invalid operator", ctx)
 
@@ -230,9 +225,6 @@ class EOp(Expr):
                     "phi i1 [{lval}, %ISLAZY{uid}], [{rval}, %WORKED{uid}]"
                     .format(lval=lval, rval=rval, uid=uid)
                 ))
-            elif self.vtype.is_string():
-                # TODO: implement
-                raise NotImplementedError()
             else:
                 raise NotImplementedError()
         else:
@@ -410,8 +402,6 @@ class Program(object):
         source += "declare i8* @f_readString()\n"
 
         source += "declare i8* @op_addString(i8*, i8*)\n"
-        source += "declare i32 @op_eqString(i8*, i8*)\n"
-        source += "declare i32 @op_neString(i8*, i8*)\n"
 
         source += self.constants.get_source() + '\n'
         for function in self.functions.values():

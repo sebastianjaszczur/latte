@@ -54,14 +54,3 @@ char* op_addString(char* left, char* right) {
 	strcpy(result + left_len, right);
 	return result;
 }
-
-int op_eqString(char* left, char* right) {
-	size_t result = strcmp(left, right);
-	if(result == 0)
-		return 1;
-	return 0;
-}
-
-int op_neString(char* left, char* right) {
-	return 1 - op_eqString(left, right);
-}

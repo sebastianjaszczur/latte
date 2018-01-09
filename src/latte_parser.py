@@ -242,8 +242,6 @@ class LLVMVisitor(LatteVisitor):
         return EOp(vtype, lexpr, rexpr, op, ctx)
 
     def visitEcomp(self, ctx: LatteParser.EcompContext):
-        # TODO: comparison of strings
-        # TODO: comparison of bools?
         if ctx.LT():
             op = LT
         elif ctx.LE():
