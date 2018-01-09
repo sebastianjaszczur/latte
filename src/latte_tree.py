@@ -267,7 +267,6 @@ class ECall(Expr):
 class VariablesBlock(object):
     def __init__(self, upper_block: 'VariablesBlock' = None):
         self.vars = dict()
-        self.arguments = []
         self.upper = upper_block
         self.uid = UID.get_uid()
 
@@ -372,9 +371,11 @@ class Program(object):
         return res
 
     def do_checks(self):
-        if 'main' not in self.globals:
+        if 'main' not in self.globals.vars:
             raise CompilationError('main not defined', None)
-        pass
+        if self.globals.get_variable('main', None) != VFun(VInt(), tuple()):
+            raise CompilationError('main has wrong signature',
+                                   self.functions['main'].ctx)
 
     def get_source(self):
         source = ""
