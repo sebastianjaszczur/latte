@@ -22,7 +22,6 @@ def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType' = None) \
         if op == MUL:
             return 'mul i32 {}, {}', VInt()
         elif op == DIV:
-            # TODO: do something with division by zero.
             return 'sdiv i32 {}, {}', VInt()
         elif op == MOD:
             return 'srem i32 {}, {}', VInt()
