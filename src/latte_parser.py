@@ -182,9 +182,10 @@ class LLVMVisitor(LatteVisitor):
         return self.visit(ctx.expr())
 
     def visitEintv(self, ctx: LatteParser.EintvContext):
-        # TODO: do something with really big/small ints.
         vtype = VInt()
         val = int(str(ctx.INT()))
+        if val >= 2**32:
+            raise CompilationError('integer too big', ctx)
         return EConst(vtype, val, ctx)
 
     def visitEtrue(self, ctx: LatteParser.EtrueContext):
