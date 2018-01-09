@@ -160,9 +160,9 @@ class LLVMVisitor(LatteVisitor):
         if ctx.expr():
             rexpr = self.visit(ctx.expr())
             if rexpr.vtype == rtype:
-                return SReturn(rexpr)
+                return SReturn(ctx, rexpr)
         elif rtype.is_void():
-            return SReturn()
+            return SReturn(ctx)
         raise CompilationError("invalid return statement", ctx)
 
     def visitSsemi(self, ctx: LatteParser.SsemiContext):

@@ -9,10 +9,9 @@ from LatteParser import LatteParser
 from latte_parser import LLVMVariableException, LLVMVisitor
 from latte_misc import ErrorRaiser, CompilationError
 
-HELP = "Run this program with file.late argument only."
+HELP = "Run this program with code.lat argument only."
 EXTENSION_LATTE = ".lat"
 EXTENSION_LL = ".ll"
-EXTENSION_BC = ".bc"
 
 DEBUG = False
 

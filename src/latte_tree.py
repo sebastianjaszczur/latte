@@ -506,8 +506,9 @@ class SWhile(Stmt):
 
 
 class SReturn(Stmt):
-    def __init__(self, expr=None):
+    def __init__(self, ctx, expr=None):
         self.expr = expr
+        self.ctx = ctx
 
     def get_code_blocks(
             self, program: Program,
@@ -521,7 +522,7 @@ class SReturn(Stmt):
                 rline = "ret {type} {name}".format(name=vname,
                                                    type=vtype.llvm_type())
             else:
-                raise NotImplementedError()
+                raise CompilationError('invalid return type', self.ctx)
             codelines.append(CodeLine(rline, save_result=False))
         else:
             codelines = [CodeLine("ret void", save_result=False)]
@@ -621,7 +622,7 @@ class Function(object):
                         var=varname, b_var=reg_varname,
                         type=vtype.llvm_type()), save_result=False))
             else:
-                raise NotImplementedError()
+                raise CompilationError('unexpected argument type', self.ctx)
         if code_blocks:
             init_codelines.extend(br_block(code_blocks[0]))
         init_block = CodeBlock(init_codelines, comment="init")
