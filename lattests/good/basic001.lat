@@ -1,9 +1,8 @@
 int main() {
-	int x = 3;
-	return 3;
+	return 0;
 }
 
-void f(int x) {
-	int x = x + 2;
-	printInt(x);
+class list {
+	int x;
+	list next;
 }

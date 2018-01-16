@@ -3,7 +3,15 @@ grammar Latte;
 // programs
 
 program
-	: fundef*
+	: (fundef | classdef)*
+	;
+
+classdef
+	: 'class' IDENT '{' field*'}'
+	;
+
+field
+	: vtype IDENT ';'
 	;
 
 fundef

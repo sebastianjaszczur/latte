@@ -17,6 +17,24 @@ class LatteListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LatteParser#classdef.
+    def enterClassdef(self, ctx:LatteParser.ClassdefContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#classdef.
+    def exitClassdef(self, ctx:LatteParser.ClassdefContext):
+        pass
+
+
+    # Enter a parse tree produced by LatteParser#field.
+    def enterField(self, ctx:LatteParser.FieldContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#field.
+    def exitField(self, ctx:LatteParser.FieldContext):
+        pass
+
+
     # Enter a parse tree produced by LatteParser#fundef.
     def enterFundef(self, ctx:LatteParser.FundefContext):
         pass
