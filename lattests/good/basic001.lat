@@ -1,8 +1,14 @@
 int main() {
+	list a;
 	return 0;
 }
 
 class list {
 	int x;
 	list next;
+	rotfl prev;
+}
+
+class rotfl {
+	list main;
 }

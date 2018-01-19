@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Dict
 from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
     OR, SPECIAL, UID, VType, VFun, VClass, VBool, VInt, VString, VVoid, \
     CompilationError, NEG
@@ -299,6 +299,72 @@ class Constants(object):
         return CodeLine(code)
 
 
+class Class(object):
+    def __init__(self, name: str):
+        self.name = name
+
+    def get_code_blocks(self, program: 'Program') -> List['CodeBlock']:
+        """code_blocks = self.block.get_code_blocks(program)
+
+        # Make initialization code block
+        init_codelines = []
+        for varname in self.arg_vars.vars:
+            reg_varname = self.arg_vars.get_variable_name(varname, None)
+            vtype = self.arg_vars.vars[varname]
+            if vtype.is_intboolstring():
+                init_codelines.append(CodeLine("{var} = alloca {type}".format(
+                    var=reg_varname, type=vtype.llvm_type()),
+                    save_result=False))
+                init_codelines.append(CodeLine(
+                    "store {type} %{var}, {type}* {b_var}".format(
+                        var=varname, b_var=reg_varname,
+                        type=vtype.llvm_type()), save_result=False))
+            else:
+                raise CompilationError('unexpected argument type', self.ctx)
+        if code_blocks:
+            init_codelines.extend(br_block(code_blocks[0]))
+        init_block = CodeBlock(init_codelines, comment="init")
+
+        return [init_block] + code_blocks"""
+
+    def get_source(self, program: 'Program'):
+        """
+        code_blocks = self.get_code_blocks(program)
+
+        if program.globals.get_variable(self.name, self.ctx).rtype.is_void():
+            if not code_blocks:
+                code_blocks.append(CodeBlock([], ending=True))
+            codeline = CodeLine('ret void', save_result=False)
+            code_blocks[-1].codelines.append(codeline)
+        elif (not code_blocks) or (not code_blocks[-1].ending):
+            raise CompilationError("function doesn't return", self.ctx)
+
+        arg_strings = []
+        for argname in self.arg_vars.vars:
+            vtype = self.arg_vars.get_variable(argname, None)
+            if vtype.is_intboolstring():
+                arg_strings.append('{} %{}'.format(vtype.llvm_type(), argname))
+            else:
+                raise NotImplementedError()
+
+        rtype = program.globals.get_variable(self.name, None).rtype.llvm_type()
+
+        begin_lines = [
+            "define {} @f_{}({}) {{".format(rtype, self.name,
+                                            ", ".join(arg_strings)),
+        ]
+
+        end_lines = [
+            "}"
+        ]
+
+        block_lines = "\n\n".join(
+            [code_block.get_source() for code_block in code_blocks])
+
+        return "\n".join(begin_lines + [block_lines] + end_lines)
+        """
+
+
 class Program(object):
     def __init__(self):
         self.types = dict()  # name -> VType
@@ -306,6 +372,7 @@ class Program(object):
             self.types[typ] = VClass(typ)
         self.globals = VariablesBlock()
         self.constants = Constants()
+        self.classes = dict()  # name -> Class
         self.last_vars = self.globals
         self.functions = dict()  # name -> Function
         self.current_function = None
@@ -349,6 +416,11 @@ class Program(object):
         source += "}\n"
 
         return source
+
+    def add_type(self, name: str, ctx):
+        if name in self.types:
+            raise CompilationError('class already declared', ctx)
+        self.types[name] = VClass(type)
 
 
 class Stmt(object):

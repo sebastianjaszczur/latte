@@ -1,3 +1,5 @@
+from typing import Dict, List
+
 from antlr4.error.ErrorListener import ErrorListener
 
 import latte_tree
@@ -127,6 +129,10 @@ class VFun(VType):
 class VClass(VType):
     def __init__(self, name: str):
         self.name = name
+        self.fields = dict()  # name -> (VType, field index)
+
+    def get_source(self):
+
 
     def get_default_expr(self):
         if self.is_int():
@@ -136,7 +142,7 @@ class VClass(VType):
         elif self.is_string():
             return latte_tree.EConst(self, b"", None)
         else:
-            raise NotImplementedError()
+            return latte_tree.EConst(self, None, None)
 
     def llvm_type(self):
         if self.is_bool():
@@ -149,6 +155,11 @@ class VClass(VType):
             return STRING
         else:
             raise NotImplementedError()
+
+    def add_field(self, field_name: str, vtype: VType, ctx):
+        if field_name in self.fields:
+            raise CompilationError('field name redeclaration', ctx)
+        self.fields[field_name] = (vtype, len(self.fields))
 
 
 def VBool():

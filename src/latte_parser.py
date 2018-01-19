@@ -4,7 +4,7 @@ from latte_tree import Program, VariablesBlock, Function, Block, Stmt, EOp, \
     EConst, SAssi, EVar, EmptyStmt, SIfElse, SReturn, SWhile, op_array, ECall, \
     EUnaryOp
 from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
-    OR, VRef, VFun, VBool, VInt, VString, CompilationError, NEG
+    OR, VRef, VFun, VBool, VInt, VString, CompilationError, NEG, VClass
 
 
 class LLVMVariableException(Exception):
@@ -20,6 +20,8 @@ class LLVMVisitor(LatteVisitor):
     def visitProgram(self, ctx: LatteParser.ProgramContext):
         for fundef in ctx.fundef():
             self.addFundefType(fundef)
+        for classdef in ctx.classdef():
+            self.addClassdefType(classdef)
         self.visitChildren(ctx)
         return self.program
 
@@ -32,6 +34,19 @@ class LLVMVisitor(LatteVisitor):
 
         self.program.globals.add_variable(name, VFun(return_type, arg_types),
                                           ctx)
+
+    def addClassdefType(self, ctx:LatteParser.ClassdefContext):
+        name = str(ctx.IDENT())
+        self.program.add_type(name, ctx)
+
+    def visitClassdef(self, ctx: LatteParser.ClassdefContext):
+        name = str(ctx.IDENT())
+        class_type = self.program.name_to_type(name, ctx)
+        assert isinstance(class_type, VClass)
+        for field in ctx.field():
+            vtype = self.program.name_to_type(str(field.vtype().IDENT()), field)
+            field_name = str(field.IDENT())
+            class_type.add_field(field_name, vtype, field)
 
     def visitFundef(self, ctx: LatteParser.FundefContext):
         name = str(ctx.IDENT())
