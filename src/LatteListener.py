@@ -215,6 +215,15 @@ class LatteListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LatteParser#eattr.
+    def enterEattr(self, ctx:LatteParser.EattrContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#eattr.
+    def exitEattr(self, ctx:LatteParser.EattrContext):
+        pass
+
+
     # Enter a parse tree produced by LatteParser#eintv.
     def enterEintv(self, ctx:LatteParser.EintvContext):
         pass
@@ -233,6 +242,15 @@ class LatteListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LatteParser#enull.
+    def enterEnull(self, ctx:LatteParser.EnullContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#enull.
+    def exitEnull(self, ctx:LatteParser.EnullContext):
+        pass
+
+
     # Enter a parse tree produced by LatteParser#eadd.
     def enterEadd(self, ctx:LatteParser.EaddContext):
         pass
@@ -248,6 +266,15 @@ class LatteListener(ParseTreeListener):
 
     # Exit a parse tree produced by LatteParser#enega.
     def exitEnega(self, ctx:LatteParser.EnegaContext):
+        pass
+
+
+    # Enter a parse tree produced by LatteParser#enew.
+    def enterEnew(self, ctx:LatteParser.EnewContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#enew.
+    def exitEnew(self, ctx:LatteParser.EnewContext):
         pass
 
 

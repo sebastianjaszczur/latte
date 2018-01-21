@@ -99,6 +99,9 @@ class VType(object):
     def llvm_type(self):
         raise NotImplementedError()
 
+    def get_source(self):
+        return ""
+
 
 class VRef(VType):
     def __init__(self, vtype: VType):
@@ -128,11 +131,13 @@ class VFun(VType):
 
 class VClass(VType):
     def __init__(self, name: str):
+        assert isinstance(name, str)
         self.name = name
-        self.fields = dict()  # name -> (VType, field index)
+        self.fields = dict()  # name -> (field_index, VType)
 
     def get_source(self):
-
+        # TODO: get_source, and call it in Program
+        raise NotImplementedError()
 
     def get_default_expr(self):
         if self.is_int():
@@ -154,12 +159,26 @@ class VClass(VType):
         elif self.is_string():
             return STRING
         else:
-            raise NotImplementedError()
+            return "%struct.s{}*".format(self.name)
+
+    def unclass_llvm_type(self):
+        assert not (self.is_intboolstring() or self.is_void())
+        return "%struct.s{}".format(self.name)
 
     def add_field(self, field_name: str, vtype: VType, ctx):
         if field_name in self.fields:
             raise CompilationError('field name redeclaration', ctx)
-        self.fields[field_name] = (vtype, len(self.fields))
+        self.fields[field_name] = (len(self.fields), vtype)
+
+    def get_source(self):
+        if self.is_intboolstring() or self.is_void():
+            return ""
+        argtypes = []
+        for fieldindex, fieldtype in sorted(self.fields.values()):
+            argtypes.append(fieldtype.llvm_type())
+        argtypes = ", ".join(argtypes)
+        return "%struct.s{name} = type {{ {argtypes} }}".format(
+            name=self.name, argtypes=argtypes)
 
 
 def VBool():

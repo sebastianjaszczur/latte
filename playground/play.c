@@ -2,14 +2,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 struct list {
+	int a;
+	char prev;
 	int x;
-	struct list* next;
+	char next;
 };
 
-struct list* f(int x) {
-	struct list a;
-	a.x = x;
-	a.next = NULL;
-	return &a;
+int f() {
+	struct list* x = malloc(sizeof(struct list));
+	printf("%d", x->x);
+	return 0;
 }

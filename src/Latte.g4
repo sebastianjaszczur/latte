@@ -61,6 +61,7 @@ expr
 	| 'false' #efals
 	| 'true' #etrue
 	| IDENT '(' (expr (',' expr)*)? ')' #ecall
+	| expr '.' IDENT #eattr
 	| '-' expr #eminu
 	| '!' expr #enega
 	| expr (MUL|DIV|MOD) expr #emult
@@ -68,6 +69,8 @@ expr
 	| expr (LT|LE|GT|GE|EQ|NE) expr #ecomp
 	| <assoc=right> expr '&&' expr #eand
 	| <assoc=right> expr '||' expr #eor
+	| '(' IDENT ')' 'null' #enull
+	| 'new' IDENT #enew
 	| '(' expr ')' # epare
 	;
 

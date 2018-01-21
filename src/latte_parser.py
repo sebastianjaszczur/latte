@@ -2,7 +2,7 @@ from LatteParser import LatteParser
 from LatteVisitor import LatteVisitor
 from latte_tree import Program, VariablesBlock, Function, Block, Stmt, EOp, \
     EConst, SAssi, EVar, EmptyStmt, SIfElse, SReturn, SWhile, op_array, ECall, \
-    EUnaryOp
+    EUnaryOp, ENew, EAttr
 from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
     OR, VRef, VFun, VBool, VInt, VString, CompilationError, NEG, VClass
 
@@ -18,11 +18,15 @@ class LLVMVisitor(LatteVisitor):
         self.program = Program()
 
     def visitProgram(self, ctx: LatteParser.ProgramContext):
-        for fundef in ctx.fundef():
-            self.addFundefType(fundef)
         for classdef in ctx.classdef():
             self.addClassdefType(classdef)
-        self.visitChildren(ctx)
+        for fundef in ctx.fundef():
+            self.addFundefType(fundef)
+
+        for classdef in ctx.classdef():
+            self.visitClassdef(classdef)
+        for fundef in ctx.fundef():
+            self.visitFundef(fundef)
         return self.program
 
     def addFundefType(self, ctx: LatteParser.FundefContext):
@@ -52,7 +56,9 @@ class LLVMVisitor(LatteVisitor):
         name = str(ctx.IDENT())
 
         vars = VariablesBlock(self.program.globals)
+        args = []
         for arg in ctx.arg():
+            args.append(str(arg.IDENT()))
             vars.add_variable(
                 str(arg.IDENT()),
                 self.program.name_to_type(str(arg.vtype().IDENT()), arg), arg)
@@ -65,7 +71,7 @@ class LLVMVisitor(LatteVisitor):
         self.program.current_function = None
         self.program.last_vars = None
 
-        function = Function(name, vars, block, ctx)
+        function = Function(name, vars, block, args, ctx)
         self.program.functions[name] = function
 
     def visitBlock(self, ctx: LatteParser.BlockContext):
@@ -127,7 +133,7 @@ class LLVMVisitor(LatteVisitor):
                 vars.add_variable(str(item.IDENT()), vtype, stmt)
         '''
         vtype = self.program.name_to_type(str(ctx.vtype().IDENT()), ctx)
-        if not vtype.is_intboolstring():
+        if not isinstance(vtype, VClass) or vtype.is_void():
             raise CompilationError("type not declarable", ctx)
         tstmts = []
         for item in ctx.item():
@@ -312,6 +318,21 @@ class LLVMVisitor(LatteVisitor):
         expr = self.visit(ctx.expr())
         _, vtype = op_array(ctx, op, expr.vtype)
         return EUnaryOp(vtype, expr, op, ctx)
+
+    def visitEnull(self, ctx: LatteParser.EnullContext):
+        classname = str(ctx.IDENT())
+        vtype = self.program.name_to_type(classname, ctx)
+        return EConst(vtype, None, ctx)
+
+    def visitEattr(self, ctx: LatteParser.EattrContext):
+        expr = self.visit(ctx.expr())
+        attr = str(ctx.IDENT())
+        return EAttr(attr, expr, ctx)
+
+    def visitEnew(self, ctx: LatteParser.EnewContext):
+        classname = str(ctx.IDENT())
+        vtype = self.program.name_to_type(classname, ctx)
+        return ENew(vtype, ctx)
 
     def visitErrorNode(self, node):
         raise CompilationError("unknown error", None)

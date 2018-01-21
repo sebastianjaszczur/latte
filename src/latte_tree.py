@@ -1,7 +1,7 @@
 from typing import List, Dict
 from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
     OR, SPECIAL, UID, VType, VFun, VClass, VBool, VInt, VString, VVoid, \
-    CompilationError, NEG
+    CompilationError, NEG, VRef
 
 
 def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType' = None) \
@@ -55,6 +55,13 @@ def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType' = None) \
     elif vtype1.is_string():
         if op == ADD:
             return 'call i8* @op_addString(i8* {}, i8* {})', VString()
+    elif not vtype1.is_void():
+        type_name = vtype1.unref().llvm_type()
+        if op == EQ:
+            return 'icmp eq {} {{}}, {{}}'.format(type_name), VBool()
+        elif op == NE:
+            return 'icmp ne {} {{}}, {{}}'.format(type_name), VBool()
+    # TODO: add EQ and NE for classes
     # Other
     raise CompilationError("invalid operator", ctx)
 
@@ -76,6 +83,34 @@ class Expr(object):
         return [CodeBlock(code_lines, comment="expr")]
 
 
+class EAttr(Expr):
+    def __init__(self, attr: str, expr: Expr, ctx):
+        vtype_class = expr.vtype.unref()
+        if attr not in vtype_class.fields:
+            raise CompilationError('field not found in class', ctx)
+        _, vtype = vtype_class.fields[attr]
+        self.vtype = VRef(vtype)
+        self.expr = expr
+        self.attr = attr
+        self.ctx = ctx
+
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
+            -> List['CodeLine']:
+        code_lines = self.expr.get_code_lines(program)
+        val = code_lines[-1].get_var_name()
+
+        code_lines.append(CodeLine(
+            "getelementptr inbounds {unclass}, {type} {val}, i32 0, i32 {ind}"
+            .format(unclass=self.expr.vtype.unref().unclass_llvm_type(),
+                    type=self.expr.vtype.unref().llvm_type(), val=val,
+                    ind=self.expr.vtype.unref().fields[self.attr][0])))
+        if not keep_ref:
+            register = code_lines[-1].get_var_name()
+            code_lines.append(
+                load_address(program, self.vtype.unref(), register, self.ctx))
+        return code_lines
+
+
 class EConst(Expr):
     def __init__(self, vtype: VType, value, ctx):
         self.value = value
@@ -93,13 +128,43 @@ class EConst(Expr):
             code_line = CodeLine("add i1 0, {}".format(int(self.value)))
         elif self.vtype.is_string():
             code_line = program.constants.get_code_line(self.value)
+        elif not self.vtype.is_void():
+            # other class
+            assert self.value is None
+            code_line = CodeLine("getelementptr {type}, {type}* null, i32 0".format(
+                    type=self.vtype.unref().unclass_llvm_type()))
         else:
             raise CompilationError("type not supported for consts", self.ctx)
         return [code_line]
 
 
+class ENew(Expr):
+    def __init__(self, vtype: VType, ctx):
+        self.vtype = vtype
+        self.ctx = ctx
+
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
+            -> List['CodeLine']:
+        code_lines = []
+        code_lines.append(CodeLine(
+            "getelementptr {unclass}, {type} null, i32 1".format(
+                type=self.vtype.llvm_type(),
+                unclass=self.vtype.unclass_llvm_type()
+        )))
+        code_lines.append(CodeLine("ptrtoint {type} {size} to i32".format(
+            type=self.vtype.llvm_type(), size=code_lines[-1].get_var_name()
+        )))
+        code_lines.append(CodeLine("call i8* @malloc(i32 {size})".format(
+            size=code_lines[-1].get_var_name()
+        )))
+        code_lines.append(CodeLine("bitcast i8* {res} to {type}".format(
+            type=self.vtype.llvm_type(), res=code_lines[-1].get_var_name()
+        )))
+        return code_lines
+
+
 def load_address(program, vtype: VType, register: str, ctx) -> 'CodeLine':
-    if vtype.is_intboolstring():
+    if not vtype.is_void():
         code_line = CodeLine(
             "load {type}, {type}* {reg}".format(reg=register,
                                                 type=vtype.llvm_type()))
@@ -117,7 +182,7 @@ class EVar(Expr):
     def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
         vtype_unref = self.vtype.unref()
-        if vtype_unref.is_intboolstring():
+        if not vtype_unref.is_void():
             code_line = CodeLine(
                 # This i32 below is OK, because it's actually an index.
                 "getelementptr  {type}, {type}* {name}, i32 0".format(
@@ -299,72 +364,6 @@ class Constants(object):
         return CodeLine(code)
 
 
-class Class(object):
-    def __init__(self, name: str):
-        self.name = name
-
-    def get_code_blocks(self, program: 'Program') -> List['CodeBlock']:
-        """code_blocks = self.block.get_code_blocks(program)
-
-        # Make initialization code block
-        init_codelines = []
-        for varname in self.arg_vars.vars:
-            reg_varname = self.arg_vars.get_variable_name(varname, None)
-            vtype = self.arg_vars.vars[varname]
-            if vtype.is_intboolstring():
-                init_codelines.append(CodeLine("{var} = alloca {type}".format(
-                    var=reg_varname, type=vtype.llvm_type()),
-                    save_result=False))
-                init_codelines.append(CodeLine(
-                    "store {type} %{var}, {type}* {b_var}".format(
-                        var=varname, b_var=reg_varname,
-                        type=vtype.llvm_type()), save_result=False))
-            else:
-                raise CompilationError('unexpected argument type', self.ctx)
-        if code_blocks:
-            init_codelines.extend(br_block(code_blocks[0]))
-        init_block = CodeBlock(init_codelines, comment="init")
-
-        return [init_block] + code_blocks"""
-
-    def get_source(self, program: 'Program'):
-        """
-        code_blocks = self.get_code_blocks(program)
-
-        if program.globals.get_variable(self.name, self.ctx).rtype.is_void():
-            if not code_blocks:
-                code_blocks.append(CodeBlock([], ending=True))
-            codeline = CodeLine('ret void', save_result=False)
-            code_blocks[-1].codelines.append(codeline)
-        elif (not code_blocks) or (not code_blocks[-1].ending):
-            raise CompilationError("function doesn't return", self.ctx)
-
-        arg_strings = []
-        for argname in self.arg_vars.vars:
-            vtype = self.arg_vars.get_variable(argname, None)
-            if vtype.is_intboolstring():
-                arg_strings.append('{} %{}'.format(vtype.llvm_type(), argname))
-            else:
-                raise NotImplementedError()
-
-        rtype = program.globals.get_variable(self.name, None).rtype.llvm_type()
-
-        begin_lines = [
-            "define {} @f_{}({}) {{".format(rtype, self.name,
-                                            ", ".join(arg_strings)),
-        ]
-
-        end_lines = [
-            "}"
-        ]
-
-        block_lines = "\n\n".join(
-            [code_block.get_source() for code_block in code_blocks])
-
-        return "\n".join(begin_lines + [block_lines] + end_lines)
-        """
-
-
 class Program(object):
     def __init__(self):
         self.types = dict()  # name -> VType
@@ -372,7 +371,8 @@ class Program(object):
             self.types[typ] = VClass(typ)
         self.globals = VariablesBlock()
         self.constants = Constants()
-        self.classes = dict()  # name -> Class
+        # TODO: remove the line below
+        # self.classes = dict()  # name -> Class
         self.last_vars = self.globals
         self.functions = dict()  # name -> Function
         self.current_function = None
@@ -403,9 +403,14 @@ class Program(object):
         source += "declare void @f_error()\n"
         source += "declare i32 @f_readInt()\n"
         source += "declare i8* @f_readString()\n"
+        source += "declare i8* @malloc(i32)\n"
 
         source += "declare i8* @op_addString(i8*, i8*)\n"
-
+        source += "\n"
+        for typename in self.types:
+            line = self.types[typename].get_source()
+            if line:
+                source += line + "\n"
         source += self.constants.get_source() + '\n'
         for function in self.functions.values():
             source += function.get_source(self) + "\n\n"
@@ -420,7 +425,7 @@ class Program(object):
     def add_type(self, name: str, ctx):
         if name in self.types:
             raise CompilationError('class already declared', ctx)
-        self.types[name] = VClass(type)
+        self.types[name] = VClass(name)
 
 
 class Stmt(object):
@@ -473,11 +478,12 @@ class SAssi(Stmt):
         v_val = v_code_lines[-1].get_var_name()
 
         vtype = self.vexpr.vtype.unref()
-        if vtype.is_intboolstring():
+        if not vtype.is_void():
             s_code_line = CodeLine("store {type} {val}, {type}* {tar}".format(
                 val=v_val, tar=t_var, type=vtype.llvm_type()),
                 save_result=False)
         else:
+            print(vtype)
             raise CompilationError("invalid assignment", self.ctx)
 
         # br_line
@@ -590,7 +596,7 @@ class SReturn(Stmt):
             codelines = self.expr.get_code_lines(program)
             vname = codelines[-1].get_var_name()
             vtype = self.expr.vtype.unref()
-            if vtype.is_intboolstring():
+            if not vtype.is_void():
                 rline = "ret {type} {name}".format(name=vname,
                                                    type=vtype.llvm_type())
             else:
@@ -658,12 +664,10 @@ class Block(Stmt):
         for varname in self.vars.vars:
             block_varname = self.vars.get_variable_name(varname, None)
             vtype = self.vars.vars[varname]
-            if vtype.is_intboolstring():
+            if not vtype.is_void():
                 init_codelines.append(CodeLine("{var} = alloca {type}".format(
                     var=block_varname, type=vtype.llvm_type()),
                     save_result=False))
-            else:
-                raise NotImplementedError()
         if code_blocks:
             init_codelines.extend(br_block(code_blocks[0]))
         init_block = CodeBlock(init_codelines, comment="init")
@@ -671,10 +675,12 @@ class Block(Stmt):
 
 
 class Function(object):
-    def __init__(self, name: str, arg_vars: VariablesBlock, block: Block, ctx):
+    def __init__(self, name: str, arg_vars: VariablesBlock, block: Block,
+                 args: List[str], ctx):
         self.name = name
         self.block = block
         self.ctx = ctx
+        self.args = args
         self.arg_vars = arg_vars
 
     def get_code_blocks(self, program: Program) -> List['CodeBlock']:
@@ -685,7 +691,7 @@ class Function(object):
         for varname in self.arg_vars.vars:
             reg_varname = self.arg_vars.get_variable_name(varname, None)
             vtype = self.arg_vars.vars[varname]
-            if vtype.is_intboolstring():
+            if not vtype.is_void():
                 init_codelines.append(CodeLine("{var} = alloca {type}".format(
                     var=reg_varname, type=vtype.llvm_type()),
                     save_result=False))
@@ -713,9 +719,9 @@ class Function(object):
             raise CompilationError("function doesn't return", self.ctx)
 
         arg_strings = []
-        for argname in self.arg_vars.vars:
+        for argname in self.args:
             vtype = self.arg_vars.get_variable(argname, None)
-            if vtype.is_intboolstring():
+            if not vtype.is_void():
                 arg_strings.append('{} %{}'.format(vtype.llvm_type(), argname))
             else:
                 raise NotImplementedError()

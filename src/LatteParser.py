@@ -7,8 +7,8 @@ import sys
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3&")
-        buf.write("\u00b5\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3)")
+        buf.write("\u00be\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\3\2\3\2\7\2\31\n\2")
         buf.write("\f\2\16\2\34\13\2\3\3\3\3\3\3\3\3\7\3\"\n\3\f\3\16\3%")
         buf.write("\13\3\3\3\3\3\3\4\3\4\3\4\3\4\3\5\3\5\3\5\3\5\3\5\3\5")
@@ -21,66 +21,71 @@ def serializedATN():
         buf.write("\3\t\3\t\5\t\u0080\n\t\3\n\3\n\3\13\3\13\3\13\3\13\3\13")
         buf.write("\3\13\3\13\3\13\3\13\3\13\3\13\7\13\u008f\n\13\f\13\16")
         buf.write("\13\u0092\13\13\5\13\u0094\n\13\3\13\3\13\3\13\3\13\3")
-        buf.write("\13\3\13\3\13\3\13\3\13\5\13\u009f\n\13\3\13\3\13\3\13")
-        buf.write("\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13")
-        buf.write("\3\13\7\13\u00b0\n\13\f\13\16\13\u00b3\13\13\3\13\2\3")
-        buf.write("\24\f\2\4\6\b\n\f\16\20\22\24\2\5\3\2\26\30\3\2\31\32")
-        buf.write("\3\2\33 \2\u00cc\2\32\3\2\2\2\4\35\3\2\2\2\6(\3\2\2\2")
-        buf.write("\b,\3\2\2\2\n<\3\2\2\2\f?\3\2\2\2\16L\3\2\2\2\20\177\3")
-        buf.write("\2\2\2\22\u0081\3\2\2\2\24\u009e\3\2\2\2\26\31\5\b\5\2")
-        buf.write("\27\31\5\4\3\2\30\26\3\2\2\2\30\27\3\2\2\2\31\34\3\2\2")
-        buf.write("\2\32\30\3\2\2\2\32\33\3\2\2\2\33\3\3\2\2\2\34\32\3\2")
-        buf.write("\2\2\35\36\7\3\2\2\36\37\7%\2\2\37#\7\4\2\2 \"\5\6\4\2")
-        buf.write("! \3\2\2\2\"%\3\2\2\2#!\3\2\2\2#$\3\2\2\2$&\3\2\2\2%#")
-        buf.write("\3\2\2\2&\'\7\5\2\2\'\5\3\2\2\2()\5\22\n\2)*\7%\2\2*+")
-        buf.write("\7\6\2\2+\7\3\2\2\2,-\5\22\n\2-.\7%\2\2.\67\7\7\2\2/\64")
-        buf.write("\5\n\6\2\60\61\7\b\2\2\61\63\5\n\6\2\62\60\3\2\2\2\63")
-        buf.write("\66\3\2\2\2\64\62\3\2\2\2\64\65\3\2\2\2\658\3\2\2\2\66")
-        buf.write("\64\3\2\2\2\67/\3\2\2\2\678\3\2\2\289\3\2\2\29:\7\t\2")
-        buf.write("\2:;\5\f\7\2;\t\3\2\2\2<=\5\22\n\2=>\7%\2\2>\13\3\2\2")
-        buf.write("\2?C\7\4\2\2@B\5\20\t\2A@\3\2\2\2BE\3\2\2\2CA\3\2\2\2")
-        buf.write("CD\3\2\2\2DF\3\2\2\2EC\3\2\2\2FG\7\5\2\2G\r\3\2\2\2HM")
-        buf.write("\7%\2\2IJ\7%\2\2JK\7\n\2\2KM\5\24\13\2LH\3\2\2\2LI\3\2")
-        buf.write("\2\2M\17\3\2\2\2N\u0080\5\f\7\2O\u0080\7\6\2\2PQ\5\22")
-        buf.write("\n\2QV\5\16\b\2RS\7\b\2\2SU\5\16\b\2TR\3\2\2\2UX\3\2\2")
-        buf.write("\2VT\3\2\2\2VW\3\2\2\2WY\3\2\2\2XV\3\2\2\2YZ\7\6\2\2Z")
-        buf.write("\u0080\3\2\2\2[\\\5\24\13\2\\]\7\n\2\2]^\5\24\13\2^_\7")
-        buf.write("\6\2\2_\u0080\3\2\2\2`a\5\24\13\2ab\7\13\2\2bc\7\6\2\2")
-        buf.write("c\u0080\3\2\2\2de\5\24\13\2ef\7\f\2\2fg\7\6\2\2g\u0080")
-        buf.write("\3\2\2\2hj\7\r\2\2ik\5\24\13\2ji\3\2\2\2jk\3\2\2\2kl\3")
-        buf.write("\2\2\2l\u0080\7\6\2\2mn\7\16\2\2no\7\7\2\2op\5\24\13\2")
-        buf.write("pq\7\t\2\2qt\5\20\t\2rs\7\17\2\2su\5\20\t\2tr\3\2\2\2")
-        buf.write("tu\3\2\2\2u\u0080\3\2\2\2vw\7\20\2\2wx\7\7\2\2xy\5\24")
-        buf.write("\13\2yz\7\t\2\2z{\5\20\t\2{\u0080\3\2\2\2|}\5\24\13\2")
-        buf.write("}~\7\6\2\2~\u0080\3\2\2\2\177N\3\2\2\2\177O\3\2\2\2\177")
-        buf.write("P\3\2\2\2\177[\3\2\2\2\177`\3\2\2\2\177d\3\2\2\2\177h")
-        buf.write("\3\2\2\2\177m\3\2\2\2\177v\3\2\2\2\177|\3\2\2\2\u0080")
-        buf.write("\21\3\2\2\2\u0081\u0082\7%\2\2\u0082\23\3\2\2\2\u0083")
-        buf.write("\u0084\b\13\1\2\u0084\u009f\7%\2\2\u0085\u009f\7$\2\2")
-        buf.write("\u0086\u009f\7&\2\2\u0087\u009f\7\21\2\2\u0088\u009f\7")
-        buf.write("\22\2\2\u0089\u008a\7%\2\2\u008a\u0093\7\7\2\2\u008b\u0090")
-        buf.write("\5\24\13\2\u008c\u008d\7\b\2\2\u008d\u008f\5\24\13\2\u008e")
-        buf.write("\u008c\3\2\2\2\u008f\u0092\3\2\2\2\u0090\u008e\3\2\2\2")
-        buf.write("\u0090\u0091\3\2\2\2\u0091\u0094\3\2\2\2\u0092\u0090\3")
-        buf.write("\2\2\2\u0093\u008b\3\2\2\2\u0093\u0094\3\2\2\2\u0094\u0095")
-        buf.write("\3\2\2\2\u0095\u009f\7\t\2\2\u0096\u0097\7\32\2\2\u0097")
-        buf.write("\u009f\5\24\13\n\u0098\u0099\7\23\2\2\u0099\u009f\5\24")
-        buf.write("\13\t\u009a\u009b\7\7\2\2\u009b\u009c\5\24\13\2\u009c")
-        buf.write("\u009d\7\t\2\2\u009d\u009f\3\2\2\2\u009e\u0083\3\2\2\2")
-        buf.write("\u009e\u0085\3\2\2\2\u009e\u0086\3\2\2\2\u009e\u0087\3")
-        buf.write("\2\2\2\u009e\u0088\3\2\2\2\u009e\u0089\3\2\2\2\u009e\u0096")
-        buf.write("\3\2\2\2\u009e\u0098\3\2\2\2\u009e\u009a\3\2\2\2\u009f")
-        buf.write("\u00b1\3\2\2\2\u00a0\u00a1\f\b\2\2\u00a1\u00a2\t\2\2\2")
-        buf.write("\u00a2\u00b0\5\24\13\t\u00a3\u00a4\f\7\2\2\u00a4\u00a5")
-        buf.write("\t\3\2\2\u00a5\u00b0\5\24\13\b\u00a6\u00a7\f\6\2\2\u00a7")
-        buf.write("\u00a8\t\4\2\2\u00a8\u00b0\5\24\13\7\u00a9\u00aa\f\5\2")
-        buf.write("\2\u00aa\u00ab\7\24\2\2\u00ab\u00b0\5\24\13\5\u00ac\u00ad")
-        buf.write("\f\4\2\2\u00ad\u00ae\7\25\2\2\u00ae\u00b0\5\24\13\4\u00af")
-        buf.write("\u00a0\3\2\2\2\u00af\u00a3\3\2\2\2\u00af\u00a6\3\2\2\2")
-        buf.write("\u00af\u00a9\3\2\2\2\u00af\u00ac\3\2\2\2\u00b0\u00b3\3")
-        buf.write("\2\2\2\u00b1\u00af\3\2\2\2\u00b1\u00b2\3\2\2\2\u00b2\25")
-        buf.write("\3\2\2\2\u00b3\u00b1\3\2\2\2\22\30\32#\64\67CLVjt\177")
-        buf.write("\u0090\u0093\u009e\u00af\u00b1")
+        buf.write("\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13")
+        buf.write("\5\13\u00a5\n\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3")
+        buf.write("\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13")
+        buf.write("\7\13\u00b9\n\13\f\13\16\13\u00bc\13\13\3\13\2\3\24\f")
+        buf.write("\2\4\6\b\n\f\16\20\22\24\2\5\3\2\31\33\3\2\34\35\3\2\36")
+        buf.write("#\2\u00d8\2\32\3\2\2\2\4\35\3\2\2\2\6(\3\2\2\2\b,\3\2")
+        buf.write("\2\2\n<\3\2\2\2\f?\3\2\2\2\16L\3\2\2\2\20\177\3\2\2\2")
+        buf.write("\22\u0081\3\2\2\2\24\u00a4\3\2\2\2\26\31\5\b\5\2\27\31")
+        buf.write("\5\4\3\2\30\26\3\2\2\2\30\27\3\2\2\2\31\34\3\2\2\2\32")
+        buf.write("\30\3\2\2\2\32\33\3\2\2\2\33\3\3\2\2\2\34\32\3\2\2\2\35")
+        buf.write("\36\7\3\2\2\36\37\7(\2\2\37#\7\4\2\2 \"\5\6\4\2! \3\2")
+        buf.write("\2\2\"%\3\2\2\2#!\3\2\2\2#$\3\2\2\2$&\3\2\2\2%#\3\2\2")
+        buf.write("\2&\'\7\5\2\2\'\5\3\2\2\2()\5\22\n\2)*\7(\2\2*+\7\6\2")
+        buf.write("\2+\7\3\2\2\2,-\5\22\n\2-.\7(\2\2.\67\7\7\2\2/\64\5\n")
+        buf.write("\6\2\60\61\7\b\2\2\61\63\5\n\6\2\62\60\3\2\2\2\63\66\3")
+        buf.write("\2\2\2\64\62\3\2\2\2\64\65\3\2\2\2\658\3\2\2\2\66\64\3")
+        buf.write("\2\2\2\67/\3\2\2\2\678\3\2\2\289\3\2\2\29:\7\t\2\2:;\5")
+        buf.write("\f\7\2;\t\3\2\2\2<=\5\22\n\2=>\7(\2\2>\13\3\2\2\2?C\7")
+        buf.write("\4\2\2@B\5\20\t\2A@\3\2\2\2BE\3\2\2\2CA\3\2\2\2CD\3\2")
+        buf.write("\2\2DF\3\2\2\2EC\3\2\2\2FG\7\5\2\2G\r\3\2\2\2HM\7(\2\2")
+        buf.write("IJ\7(\2\2JK\7\n\2\2KM\5\24\13\2LH\3\2\2\2LI\3\2\2\2M\17")
+        buf.write("\3\2\2\2N\u0080\5\f\7\2O\u0080\7\6\2\2PQ\5\22\n\2QV\5")
+        buf.write("\16\b\2RS\7\b\2\2SU\5\16\b\2TR\3\2\2\2UX\3\2\2\2VT\3\2")
+        buf.write("\2\2VW\3\2\2\2WY\3\2\2\2XV\3\2\2\2YZ\7\6\2\2Z\u0080\3")
+        buf.write("\2\2\2[\\\5\24\13\2\\]\7\n\2\2]^\5\24\13\2^_\7\6\2\2_")
+        buf.write("\u0080\3\2\2\2`a\5\24\13\2ab\7\13\2\2bc\7\6\2\2c\u0080")
+        buf.write("\3\2\2\2de\5\24\13\2ef\7\f\2\2fg\7\6\2\2g\u0080\3\2\2")
+        buf.write("\2hj\7\r\2\2ik\5\24\13\2ji\3\2\2\2jk\3\2\2\2kl\3\2\2\2")
+        buf.write("l\u0080\7\6\2\2mn\7\16\2\2no\7\7\2\2op\5\24\13\2pq\7\t")
+        buf.write("\2\2qt\5\20\t\2rs\7\17\2\2su\5\20\t\2tr\3\2\2\2tu\3\2")
+        buf.write("\2\2u\u0080\3\2\2\2vw\7\20\2\2wx\7\7\2\2xy\5\24\13\2y")
+        buf.write("z\7\t\2\2z{\5\20\t\2{\u0080\3\2\2\2|}\5\24\13\2}~\7\6")
+        buf.write("\2\2~\u0080\3\2\2\2\177N\3\2\2\2\177O\3\2\2\2\177P\3\2")
+        buf.write("\2\2\177[\3\2\2\2\177`\3\2\2\2\177d\3\2\2\2\177h\3\2\2")
+        buf.write("\2\177m\3\2\2\2\177v\3\2\2\2\177|\3\2\2\2\u0080\21\3\2")
+        buf.write("\2\2\u0081\u0082\7(\2\2\u0082\23\3\2\2\2\u0083\u0084\b")
+        buf.write("\13\1\2\u0084\u00a5\7(\2\2\u0085\u00a5\7\'\2\2\u0086\u00a5")
+        buf.write("\7)\2\2\u0087\u00a5\7\21\2\2\u0088\u00a5\7\22\2\2\u0089")
+        buf.write("\u008a\7(\2\2\u008a\u0093\7\7\2\2\u008b\u0090\5\24\13")
+        buf.write("\2\u008c\u008d\7\b\2\2\u008d\u008f\5\24\13\2\u008e\u008c")
+        buf.write("\3\2\2\2\u008f\u0092\3\2\2\2\u0090\u008e\3\2\2\2\u0090")
+        buf.write("\u0091\3\2\2\2\u0091\u0094\3\2\2\2\u0092\u0090\3\2\2\2")
+        buf.write("\u0093\u008b\3\2\2\2\u0093\u0094\3\2\2\2\u0094\u0095\3")
+        buf.write("\2\2\2\u0095\u00a5\7\t\2\2\u0096\u0097\7\35\2\2\u0097")
+        buf.write("\u00a5\5\24\13\f\u0098\u0099\7\24\2\2\u0099\u00a5\5\24")
+        buf.write("\13\13\u009a\u009b\7\7\2\2\u009b\u009c\7(\2\2\u009c\u009d")
+        buf.write("\7\t\2\2\u009d\u00a5\7\27\2\2\u009e\u009f\7\30\2\2\u009f")
+        buf.write("\u00a5\7(\2\2\u00a0\u00a1\7\7\2\2\u00a1\u00a2\5\24\13")
+        buf.write("\2\u00a2\u00a3\7\t\2\2\u00a3\u00a5\3\2\2\2\u00a4\u0083")
+        buf.write("\3\2\2\2\u00a4\u0085\3\2\2\2\u00a4\u0086\3\2\2\2\u00a4")
+        buf.write("\u0087\3\2\2\2\u00a4\u0088\3\2\2\2\u00a4\u0089\3\2\2\2")
+        buf.write("\u00a4\u0096\3\2\2\2\u00a4\u0098\3\2\2\2\u00a4\u009a\3")
+        buf.write("\2\2\2\u00a4\u009e\3\2\2\2\u00a4\u00a0\3\2\2\2\u00a5\u00ba")
+        buf.write("\3\2\2\2\u00a6\u00a7\f\n\2\2\u00a7\u00a8\t\2\2\2\u00a8")
+        buf.write("\u00b9\5\24\13\13\u00a9\u00aa\f\t\2\2\u00aa\u00ab\t\3")
+        buf.write("\2\2\u00ab\u00b9\5\24\13\n\u00ac\u00ad\f\b\2\2\u00ad\u00ae")
+        buf.write("\t\4\2\2\u00ae\u00b9\5\24\13\t\u00af\u00b0\f\7\2\2\u00b0")
+        buf.write("\u00b1\7\25\2\2\u00b1\u00b9\5\24\13\7\u00b2\u00b3\f\6")
+        buf.write("\2\2\u00b3\u00b4\7\26\2\2\u00b4\u00b9\5\24\13\6\u00b5")
+        buf.write("\u00b6\f\r\2\2\u00b6\u00b7\7\23\2\2\u00b7\u00b9\7(\2\2")
+        buf.write("\u00b8\u00a6\3\2\2\2\u00b8\u00a9\3\2\2\2\u00b8\u00ac\3")
+        buf.write("\2\2\2\u00b8\u00af\3\2\2\2\u00b8\u00b2\3\2\2\2\u00b8\u00b5")
+        buf.write("\3\2\2\2\u00b9\u00bc\3\2\2\2\u00ba\u00b8\3\2\2\2\u00ba")
+        buf.write("\u00bb\3\2\2\2\u00bb\25\3\2\2\2\u00bc\u00ba\3\2\2\2\22")
+        buf.write("\30\32#\64\67CLVjt\177\u0090\u0093\u00a4\u00b8\u00ba")
         return buf.getvalue()
 
 
@@ -96,18 +101,20 @@ class LatteParser ( Parser ):
 
     literalNames = [ "<INVALID>", "'class'", "'{'", "'}'", "';'", "'('", 
                      "','", "')'", "'='", "'++'", "'--'", "'return'", "'if'", 
-                     "'else'", "'while'", "'false'", "'true'", "'!'", "'&&'", 
-                     "'||'", "'*'", "'/'", "'%'", "'+'", "'-'", "'<'", "'<='", 
-                     "'>'", "'>='", "'=='", "'!='" ]
+                     "'else'", "'while'", "'false'", "'true'", "'.'", "'!'", 
+                     "'&&'", "'||'", "'null'", "'new'", "'*'", "'/'", "'%'", 
+                     "'+'", "'-'", "'<'", "'<='", "'>'", "'>='", "'=='", 
+                     "'!='" ]
 
     symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
                       "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "MUL", "DIV", "MOD", "ADD", "SUB", "LT", "LE", "GT", 
-                      "GE", "EQ", "NE", "WS", "COMMENT_SL", "COMMENT_ML", 
-                      "INT", "IDENT", "STRING" ]
+                      "<INVALID>", "<INVALID>", "<INVALID>", "MUL", "DIV", 
+                      "MOD", "ADD", "SUB", "LT", "LE", "GT", "GE", "EQ", 
+                      "NE", "WS", "COMMENT_SL", "COMMENT_ML", "INT", "IDENT", 
+                      "STRING" ]
 
     RULE_program = 0
     RULE_classdef = 1
@@ -143,23 +150,26 @@ class LatteParser ( Parser ):
     T__16=17
     T__17=18
     T__18=19
-    MUL=20
-    DIV=21
-    MOD=22
-    ADD=23
-    SUB=24
-    LT=25
-    LE=26
-    GT=27
-    GE=28
-    EQ=29
-    NE=30
-    WS=31
-    COMMENT_SL=32
-    COMMENT_ML=33
-    INT=34
-    IDENT=35
-    STRING=36
+    T__19=20
+    T__20=21
+    T__21=22
+    MUL=23
+    DIV=24
+    MOD=25
+    ADD=26
+    SUB=27
+    LT=28
+    LE=29
+    GT=30
+    GE=31
+    EQ=32
+    NE=33
+    WS=34
+    COMMENT_SL=35
+    COMMENT_ML=36
+    INT=37
+    IDENT=38
+    STRING=39
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -553,7 +563,7 @@ class LatteParser ( Parser ):
             self.state = 65
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__1) | (1 << LatteParser.T__3) | (1 << LatteParser.T__4) | (1 << LatteParser.T__10) | (1 << LatteParser.T__11) | (1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.T__16) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.STRING))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__1) | (1 << LatteParser.T__3) | (1 << LatteParser.T__4) | (1 << LatteParser.T__10) | (1 << LatteParser.T__11) | (1 << LatteParser.T__13) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.T__17) | (1 << LatteParser.T__21) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.STRING))) != 0):
                 self.state = 62
                 self.stmt()
                 self.state = 67
@@ -1007,7 +1017,7 @@ class LatteParser ( Parser ):
                 self.state = 104
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__4) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.T__16) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.STRING))) != 0):
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__4) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.T__17) | (1 << LatteParser.T__21) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.STRING))) != 0):
                     self.state = 103
                     self.expr(0)
 
@@ -1276,6 +1286,33 @@ class LatteParser ( Parser ):
                 return visitor.visitChildren(self)
 
 
+    class EattrContext(ExprContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a LatteParser.ExprContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def expr(self):
+            return self.getTypedRuleContext(LatteParser.ExprContext,0)
+
+        def IDENT(self):
+            return self.getToken(LatteParser.IDENT, 0)
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterEattr" ):
+                listener.enterEattr(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitEattr" ):
+                listener.exitEattr(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitEattr" ):
+                return visitor.visitEattr(self)
+            else:
+                return visitor.visitChildren(self)
+
+
     class EintvContext(ExprContext):
 
         def __init__(self, parser, ctx:ParserRuleContext): # actually a LatteParser.ExprContext
@@ -1320,6 +1357,30 @@ class LatteParser ( Parser ):
         def accept(self, visitor:ParseTreeVisitor):
             if hasattr( visitor, "visitEstrv" ):
                 return visitor.visitEstrv(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+    class EnullContext(ExprContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a LatteParser.ExprContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def IDENT(self):
+            return self.getToken(LatteParser.IDENT, 0)
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterEnull" ):
+                listener.enterEnull(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitEnull" ):
+                listener.exitEnull(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitEnull" ):
+                return visitor.visitEnull(self)
             else:
                 return visitor.visitChildren(self)
 
@@ -1377,6 +1438,30 @@ class LatteParser ( Parser ):
         def accept(self, visitor:ParseTreeVisitor):
             if hasattr( visitor, "visitEnega" ):
                 return visitor.visitEnega(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+    class EnewContext(ExprContext):
+
+        def __init__(self, parser, ctx:ParserRuleContext): # actually a LatteParser.ExprContext
+            super().__init__(parser)
+            self.copyFrom(ctx)
+
+        def IDENT(self):
+            return self.getToken(LatteParser.IDENT, 0)
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterEnew" ):
+                listener.enterEnew(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitEnew" ):
+                listener.exitEnew(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitEnew" ):
+                return visitor.visitEnew(self)
             else:
                 return visitor.visitChildren(self)
 
@@ -1528,7 +1613,7 @@ class LatteParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 156
+            self.state = 162
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,13,self._ctx)
             if la_ == 1:
@@ -1583,7 +1668,7 @@ class LatteParser ( Parser ):
                 self.state = 145
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__4) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.T__16) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.STRING))) != 0):
+                if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.T__4) | (1 << LatteParser.T__14) | (1 << LatteParser.T__15) | (1 << LatteParser.T__17) | (1 << LatteParser.T__21) | (1 << LatteParser.SUB) | (1 << LatteParser.INT) | (1 << LatteParser.IDENT) | (1 << LatteParser.STRING))) != 0):
                     self.state = 137
                     self.expr(0)
                     self.state = 142
@@ -1611,7 +1696,7 @@ class LatteParser ( Parser ):
                 self.state = 148
                 self.match(LatteParser.SUB)
                 self.state = 149
-                self.expr(8)
+                self.expr(10)
                 pass
 
             elif la_ == 8:
@@ -1619,26 +1704,50 @@ class LatteParser ( Parser ):
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 150
-                self.match(LatteParser.T__16)
+                self.match(LatteParser.T__17)
                 self.state = 151
-                self.expr(7)
+                self.expr(9)
                 pass
 
             elif la_ == 9:
-                localctx = LatteParser.EpareContext(self, localctx)
+                localctx = LatteParser.EnullContext(self, localctx)
                 self._ctx = localctx
                 _prevctx = localctx
                 self.state = 152
                 self.match(LatteParser.T__4)
                 self.state = 153
-                self.expr(0)
+                self.match(LatteParser.IDENT)
                 self.state = 154
+                self.match(LatteParser.T__6)
+                self.state = 155
+                self.match(LatteParser.T__20)
+                pass
+
+            elif la_ == 10:
+                localctx = LatteParser.EnewContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 156
+                self.match(LatteParser.T__21)
+                self.state = 157
+                self.match(LatteParser.IDENT)
+                pass
+
+            elif la_ == 11:
+                localctx = LatteParser.EpareContext(self, localctx)
+                self._ctx = localctx
+                _prevctx = localctx
+                self.state = 158
+                self.match(LatteParser.T__4)
+                self.state = 159
+                self.expr(0)
+                self.state = 160
                 self.match(LatteParser.T__6)
                 pass
 
 
             self._ctx.stop = self._input.LT(-1)
-            self.state = 175
+            self.state = 184
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
@@ -1646,91 +1755,104 @@ class LatteParser ( Parser ):
                     if self._parseListeners is not None:
                         self.triggerExitRuleEvent()
                     _prevctx = localctx
-                    self.state = 173
+                    self.state = 182
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,14,self._ctx)
                     if la_ == 1:
                         localctx = LatteParser.EmultContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 158
-                        if not self.precpred(self._ctx, 6):
+                        self.state = 164
+                        if not self.precpred(self._ctx, 8):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
-                        self.state = 159
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 8)")
+                        self.state = 165
                         _la = self._input.LA(1)
                         if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.MUL) | (1 << LatteParser.DIV) | (1 << LatteParser.MOD))) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 160
-                        self.expr(7)
+                        self.state = 166
+                        self.expr(9)
                         pass
 
                     elif la_ == 2:
                         localctx = LatteParser.EaddContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 161
-                        if not self.precpred(self._ctx, 5):
+                        self.state = 167
+                        if not self.precpred(self._ctx, 7):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
-                        self.state = 162
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 7)")
+                        self.state = 168
                         _la = self._input.LA(1)
                         if not(_la==LatteParser.ADD or _la==LatteParser.SUB):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 163
-                        self.expr(6)
+                        self.state = 169
+                        self.expr(8)
                         pass
 
                     elif la_ == 3:
                         localctx = LatteParser.EcompContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 164
-                        if not self.precpred(self._ctx, 4):
+                        self.state = 170
+                        if not self.precpred(self._ctx, 6):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
-                        self.state = 165
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 6)")
+                        self.state = 171
                         _la = self._input.LA(1)
                         if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << LatteParser.LT) | (1 << LatteParser.LE) | (1 << LatteParser.GT) | (1 << LatteParser.GE) | (1 << LatteParser.EQ) | (1 << LatteParser.NE))) != 0)):
                             self._errHandler.recoverInline(self)
                         else:
                             self._errHandler.reportMatch(self)
                             self.consume()
-                        self.state = 166
-                        self.expr(5)
+                        self.state = 172
+                        self.expr(7)
                         pass
 
                     elif la_ == 4:
                         localctx = LatteParser.EandContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 167
-                        if not self.precpred(self._ctx, 3):
+                        self.state = 173
+                        if not self.precpred(self._ctx, 5):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 3)")
-                        self.state = 168
-                        self.match(LatteParser.T__17)
-                        self.state = 169
-                        self.expr(3)
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 5)")
+                        self.state = 174
+                        self.match(LatteParser.T__18)
+                        self.state = 175
+                        self.expr(5)
                         pass
 
                     elif la_ == 5:
                         localctx = LatteParser.EorContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
                         self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
-                        self.state = 170
-                        if not self.precpred(self._ctx, 2):
+                        self.state = 176
+                        if not self.precpred(self._ctx, 4):
                             from antlr4.error.Errors import FailedPredicateException
-                            raise FailedPredicateException(self, "self.precpred(self._ctx, 2)")
-                        self.state = 171
-                        self.match(LatteParser.T__18)
-                        self.state = 172
-                        self.expr(2)
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 4)")
+                        self.state = 177
+                        self.match(LatteParser.T__19)
+                        self.state = 178
+                        self.expr(4)
+                        pass
+
+                    elif la_ == 6:
+                        localctx = LatteParser.EattrContext(self, LatteParser.ExprContext(self, _parentctx, _parentState))
+                        self.pushNewRecursionContext(localctx, _startState, self.RULE_expr)
+                        self.state = 179
+                        if not self.precpred(self._ctx, 11):
+                            from antlr4.error.Errors import FailedPredicateException
+                            raise FailedPredicateException(self, "self.precpred(self._ctx, 11)")
+                        self.state = 180
+                        self.match(LatteParser.T__16)
+                        self.state = 181
+                        self.match(LatteParser.IDENT)
                         pass
 
              
-                self.state = 177
+                self.state = 186
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,15,self._ctx)
 
@@ -1756,23 +1878,27 @@ class LatteParser ( Parser ):
 
     def expr_sempred(self, localctx:ExprContext, predIndex:int):
             if predIndex == 0:
-                return self.precpred(self._ctx, 6)
+                return self.precpred(self._ctx, 8)
          
 
             if predIndex == 1:
-                return self.precpred(self._ctx, 5)
+                return self.precpred(self._ctx, 7)
          
 
             if predIndex == 2:
-                return self.precpred(self._ctx, 4)
+                return self.precpred(self._ctx, 6)
          
 
             if predIndex == 3:
-                return self.precpred(self._ctx, 3)
+                return self.precpred(self._ctx, 5)
          
 
             if predIndex == 4:
-                return self.precpred(self._ctx, 2)
+                return self.precpred(self._ctx, 4)
+         
+
+            if predIndex == 5:
+                return self.precpred(self._ctx, 11)
          
 
 

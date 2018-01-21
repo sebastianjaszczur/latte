@@ -1,14 +1,27 @@
 int main() {
-	list a;
+	printString("hello");
+	list a = fromTo(3, 10);
+	printList(a);
 	return 0;
 }
 
 class list {
-	int x;
+	int val;
 	list next;
-	rotfl prev;
 }
 
-class rotfl {
-	list main;
+list fromTo(int x, int y) {
+	if(x > y)
+		return (list)null;
+	list a = new list;
+	a.val = x;
+	a.next = fromTo(x+1, y);
+	return a;
+}
+
+void printList(list a) {
+	if(a == (list)null)
+		return;
+	printInt(a.val);
+	printList(a.next);
 }
