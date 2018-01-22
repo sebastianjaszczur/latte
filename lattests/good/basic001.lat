@@ -1,27 +1,20 @@
 int main() {
 	printString("hello");
-	list a = fromTo(3, 10);
-	printList(a);
+	A x = new A;
+	x.a = 3;
 	return 0;
 }
 
-class list {
-	int val;
-	list next;
+class A {
+	int a;
+	A next;
+
+	int getA() {
+		return a;
+	}
 }
 
-list fromTo(int x, int y) {
-	if(x > y)
-		return (list)null;
-	list a = new list;
-	a.val = x;
-	a.next = fromTo(x+1, y);
-	return a;
-}
-
-void printList(list a) {
-	if(a == (list)null)
-		return;
-	printInt(a.val);
-	printList(a.next);
+class B extends A {
+	int b;
+	boolean c;
 }

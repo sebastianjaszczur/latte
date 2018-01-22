@@ -302,7 +302,7 @@ class ECall(Expr):
 
 class VariablesBlock(object):
     def __init__(self, upper_block: 'VariablesBlock' = None):
-        self.vars = dict()
+        self.vars = dict()  # str -> VType
         self.upper = upper_block
         self.uid = UID.get_uid()
 
@@ -422,10 +422,10 @@ class Program(object):
 
         return source
 
-    def add_type(self, name: str, ctx):
+    def add_type(self, name: str, parent_name: str, ctx):
         if name in self.types:
             raise CompilationError('class already declared', ctx)
-        self.types[name] = VClass(name)
+        self.types[name] = VClass(name, parent_name, ctx)
 
 
 class Stmt(object):
@@ -478,9 +478,20 @@ class SAssi(Stmt):
         v_val = v_code_lines[-1].get_var_name()
 
         vtype = self.vexpr.vtype.unref()
+        ttype = self.texpr.vtype.unref()
         if not vtype.is_void():
+            if vtype != ttype:
+                # Casting.
+                c_code_lines = [CodeLine(
+                    "bitcast {vtype} {v_val} to {ttype}".format(
+                        vtype=vtype.llvm_type(), v_val=v_val,
+                        ttype=ttype.llvm_type()
+                    ))]
+                v_val = c_code_lines[-1].get_var_name()
+            else:
+                c_code_lines = []
             s_code_line = CodeLine("store {type} {val}, {type}* {tar}".format(
-                val=v_val, tar=t_var, type=vtype.llvm_type()),
+                val=v_val, tar=t_var, type=ttype.llvm_type()),
                 save_result=False)
         else:
             print(vtype)
@@ -490,7 +501,8 @@ class SAssi(Stmt):
         br_lines = br_block(next_code_block)
 
         # Concatenation
-        code_lines = t_code_lines + v_code_lines + [s_code_line] + br_lines
+        code_lines = (t_code_lines + v_code_lines + c_code_lines + [s_code_line]
+                      + br_lines)
         return [CodeBlock(code_lines, comment="assignment")]
 
 
@@ -675,12 +687,13 @@ class Block(Stmt):
 
 
 class Function(object):
-    def __init__(self, name: str, arg_vars: VariablesBlock, block: Block,
-                 args: List[str], ctx):
+    def __init__(self, name: str, field_vars: VariablesBlock,
+                 arg_vars: VariablesBlock, block: Block, args: List[str], ctx):
         self.name = name
         self.block = block
         self.ctx = ctx
         self.args = args
+        self.field_vars = field_vars
         self.arg_vars = arg_vars
 
     def get_code_blocks(self, program: Program) -> List['CodeBlock']:
@@ -688,6 +701,24 @@ class Function(object):
 
         # Make initialization code block
         init_codelines = []
+        if "this.class" in self.arg_vars.vars:
+            classtype = self.arg_vars.get_variable("this.class", self.ctx)
+            for varname in self.field_vars.vars:
+                reg_varname = self.field_vars.get_variable_name(varname, None)
+                vtype = self.field_vars.vars[varname]
+                if not vtype.is_void():
+                    init_codelines.append(CodeLine(
+                        "{var} = getelementptr inbounds {unclass}, {type} {val}"
+                        ", i32 0, i32 {ind}".format(
+                            var=reg_varname,
+                            unclass=classtype.unref()
+                            .unclass_llvm_type(),
+                            type=classtype.llvm_type(),
+                            val="%this.class", ind=classtype.fields[varname][0]
+                        ), save_result=False))
+                else:
+                    raise CompilationError('unexpected argument type', self.ctx)
+
         for varname in self.arg_vars.vars:
             reg_varname = self.arg_vars.get_variable_name(varname, None)
             vtype = self.arg_vars.vars[varname]

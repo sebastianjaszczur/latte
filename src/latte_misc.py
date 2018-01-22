@@ -78,6 +78,9 @@ class VType(object):
     def __ne__(self, other):
         return not (self == other)
 
+    def is_children_of(self, other):
+        return self == other
+
     def unref(self):
         return self
 
@@ -128,12 +131,20 @@ class VFun(VType):
             ", ".join(str(param) for param in params),
             rtype)
 
+    def llvm_type(self):
+        return "{} ({})".format(
+            self.rtype.llvm_type(),
+            ", ".join(param.llvm_type() for param in self.params))
+
 
 class VClass(VType):
-    def __init__(self, name: str):
+    def __init__(self, name: str, parent_name: str=None, ctx=None):
         assert isinstance(name, str)
         self.name = name
         self.fields = dict()  # name -> (field_index, VType)
+        self.parent_name = parent_name
+        self.parent_type = None
+        self.ctx = ctx
 
     def get_source(self):
         # TODO: get_source, and call it in Program
@@ -148,6 +159,10 @@ class VClass(VType):
             return latte_tree.EConst(self, b"", None)
         else:
             return latte_tree.EConst(self, None, None)
+
+    def is_children_of(self, other):
+        return self == other or (self.parent_type and
+                                 self.parent_type.is_children_of(other))
 
     def llvm_type(self):
         if self.is_bool():
@@ -169,6 +184,11 @@ class VClass(VType):
         if field_name in self.fields:
             raise CompilationError('field name redeclaration', ctx)
         self.fields[field_name] = (len(self.fields), vtype)
+
+    def copy_fields(self, parent_class):
+        assert len(self.fields) == 0
+        for field_name in parent_class.fields:
+            self.fields[field_name] = parent_class.fields[field_name]
 
     def get_source(self):
         if self.is_intboolstring() or self.is_void():

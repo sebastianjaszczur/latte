@@ -19,6 +19,11 @@ class LatteVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LatteParser#parentclass.
+    def visitParentclass(self, ctx:LatteParser.ParentclassContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LatteParser#field.
     def visitField(self, ctx:LatteParser.FieldContext):
         return self.visitChildren(ctx)
@@ -146,6 +151,11 @@ class LatteVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LatteParser#eadd.
     def visitEadd(self, ctx:LatteParser.EaddContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LatteParser#emeth.
+    def visitEmeth(self, ctx:LatteParser.EmethContext):
         return self.visitChildren(ctx)
 
 

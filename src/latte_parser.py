@@ -20,43 +20,93 @@ class LLVMVisitor(LatteVisitor):
     def visitProgram(self, ctx: LatteParser.ProgramContext):
         for classdef in ctx.classdef():
             self.addClassdefType(classdef)
+        for classdef in ctx.classdef():
+            class_type = self.program.name_to_type(str(classdef.IDENT()),
+                                                   classdef)
+            for fundef in classdef.fundef():
+                self.addFundefType(fundef, class_type)
         for fundef in ctx.fundef():
             self.addFundefType(fundef)
 
+        done_type_names = set()
+        changes = True
+        while changes:
+            class_left = None
+            changes = False
+            for vtype in self.program.types.values():
+                if vtype.ctx is not None and vtype.name not in done_type_names:
+                    if (vtype.parent_name is None or
+                            vtype.parent_name in done_type_names):
+                        self.visitClassdef(vtype.ctx)
+                        done_type_names.add(vtype.name)
+                        changes = True
+                    else:
+                        class_left = vtype.ctx
+        if class_left:
+            raise CompilationError("circular class inheritance", class_left)
+
         for classdef in ctx.classdef():
-            self.visitClassdef(classdef)
+            class_type = self.program.name_to_type(str(classdef.IDENT()),
+                                                   classdef)
+            for fundef in classdef.fundef():
+                self.visitFundef(fundef, class_type)
         for fundef in ctx.fundef():
             self.visitFundef(fundef)
         return self.program
 
-    def addFundefType(self, ctx: LatteParser.FundefContext):
-        name = str(ctx.IDENT())
+    def addFundefType(self, ctx: LatteParser.FundefContext, cls: VClass=None):
+        if cls:
+            name = cls.name + str(ctx.IDENT())
+        else:
+            name = str(ctx.IDENT())
         return_type = self.program.name_to_type(str(ctx.vtype().IDENT()), ctx)
         arg_types = tuple(
             [self.program.name_to_type(str(arg.vtype().IDENT()), arg)
              for arg in ctx.arg()])
+        if cls:
+            arg_types = (cls, ) + arg_types
 
         self.program.globals.add_variable(name, VFun(return_type, arg_types),
                                           ctx)
 
-    def addClassdefType(self, ctx:LatteParser.ClassdefContext):
+    def addClassdefType(self, ctx: LatteParser.ClassdefContext):
         name = str(ctx.IDENT())
-        self.program.add_type(name, ctx)
+        if ctx.parentclass():
+            parent_name = str(ctx.parentclass().IDENT())
+        else:
+            parent_name = None
+        self.program.add_type(name, parent_name, ctx)
 
     def visitClassdef(self, ctx: LatteParser.ClassdefContext):
         name = str(ctx.IDENT())
         class_type = self.program.name_to_type(name, ctx)
         assert isinstance(class_type, VClass)
+        print("Class {} extends {}".format(name, class_type.parent_name))
+        if class_type.parent_name:
+            print("Copying fields from {} to {}".format(name, class_type.parent_name))
+            parent_vtype = self.program.name_to_type(class_type.parent_name,
+                                                     ctx)
+            class_type.parent_type = parent_vtype
+            class_type.copy_fields(parent_vtype)
         for field in ctx.field():
             vtype = self.program.name_to_type(str(field.vtype().IDENT()), field)
             field_name = str(field.IDENT())
             class_type.add_field(field_name, vtype, field)
 
-    def visitFundef(self, ctx: LatteParser.FundefContext):
-        name = str(ctx.IDENT())
+    def visitFundef(self, ctx: LatteParser.FundefContext, cls: VClass=None):
+        if cls:
+            name = cls.name + str(ctx.IDENT())
+        else:
+            name = str(ctx.IDENT())
 
-        vars = VariablesBlock(self.program.globals)
-        args = []
+        fields = VariablesBlock(self.program.globals)
+        vars = VariablesBlock(fields)
+        if cls:
+            for field_name in cls.fields:
+                fields.add_variable(field_name, cls.fields[field_name][1], ctx)
+            vars.add_variable("this.class", cls, ctx)
+
+        args = ["this.class"] if cls else []
         for arg in ctx.arg():
             args.append(str(arg.IDENT()))
             vars.add_variable(
@@ -71,7 +121,7 @@ class LLVMVisitor(LatteVisitor):
         self.program.current_function = None
         self.program.last_vars = None
 
-        function = Function(name, vars, block, args, ctx)
+        function = Function(name, fields, vars, block, args, ctx)
         self.program.functions[name] = function
 
     def visitBlock(self, ctx: LatteParser.BlockContext):
@@ -119,7 +169,7 @@ class LLVMVisitor(LatteVisitor):
         texpr = self.visit(ctx.expr(0))
         if not isinstance(texpr.vtype, VRef):
             raise CompilationError("invalid assignment target", ctx)
-        if vexpr.vtype != texpr.vtype:
+        if not vexpr.vtype.unref().is_children_of(texpr.vtype.unref()):
             raise CompilationError("invalid assignment type", ctx)
         return SAssi(texpr, vexpr, ctx)
 
@@ -143,7 +193,7 @@ class LLVMVisitor(LatteVisitor):
                 vexpr = self.visit(expr)
             else:
                 vexpr = vtype.get_default_expr()
-            if vtype != vexpr.vtype:
+            if not vexpr.vtype.unref().is_children_of(vtype.unref()):
                 raise CompilationError("invalid assignment type", item)
             self.program.last_vars.add_variable(name, vtype, item)
             texpr = EVar(self.program.last_vars.get_variable_name(name, item),

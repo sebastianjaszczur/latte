@@ -3,15 +3,16 @@
 #include <string.h>
 
 
-struct list {
+struct A {
 	int a;
-	char prev;
-	int x;
-	char next;
+};
+
+struct B(struct A) {
+	int b;
 };
 
 int f() {
-	struct list* x = malloc(sizeof(struct list));
-	printf("%d", x->x);
+	struct B* x = malloc(sizeof(struct B));
+	printf("%d", x->b);
 	return 0;
 }

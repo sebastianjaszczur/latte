@@ -26,6 +26,15 @@ class LatteListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LatteParser#parentclass.
+    def enterParentclass(self, ctx:LatteParser.ParentclassContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#parentclass.
+    def exitParentclass(self, ctx:LatteParser.ParentclassContext):
+        pass
+
+
     # Enter a parse tree produced by LatteParser#field.
     def enterField(self, ctx:LatteParser.FieldContext):
         pass
@@ -257,6 +266,15 @@ class LatteListener(ParseTreeListener):
 
     # Exit a parse tree produced by LatteParser#eadd.
     def exitEadd(self, ctx:LatteParser.EaddContext):
+        pass
+
+
+    # Enter a parse tree produced by LatteParser#emeth.
+    def enterEmeth(self, ctx:LatteParser.EmethContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#emeth.
+    def exitEmeth(self, ctx:LatteParser.EmethContext):
         pass
 
 

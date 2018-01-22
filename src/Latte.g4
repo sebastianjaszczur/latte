@@ -7,7 +7,11 @@ program
 	;
 
 classdef
-	: 'class' IDENT '{' field*'}'
+	: 'class' IDENT ('extends' parentclass)? '{' (field | fundef)*'}'
+	;
+
+parentclass
+	: IDENT
 	;
 
 field
@@ -61,6 +65,7 @@ expr
 	| 'false' #efals
 	| 'true' #etrue
 	| IDENT '(' (expr (',' expr)*)? ')' #ecall
+	| expr '.' IDENT '(' (expr (',' expr)*)? ')' #emeth
 	| expr '.' IDENT #eattr
 	| '-' expr #eminu
 	| '!' expr #enega
