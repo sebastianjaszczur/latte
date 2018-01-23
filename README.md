@@ -4,6 +4,17 @@ Autor: Sebastian Jaszczur
 sj359674@students.mimuw.edu.pl
 s.jaszczur@student.uw.edu.pl
 
+# Zakres rozwiązania
+
+* front-end - do 4p
+* back-end LLVM - do 8p
+* optymalizacje - do 3p: jest tylko usuwanie martwego kodu (np. po return), więc mniej
+* Rozszerzenia - razem do 10p
+  * tablice - do 2p
+  * struktury - do 2p
+  * obiekty (atrybuty, metody, dziedziczenie bez zastępowania metod) - dodatkowo do 3p
+  * metody wirtualne - dodatkowo do 3p
+
 # Setup i uruchomienie kompilatora
 
 Wywołanie make w katalogu głównym powinno stworzyć skrypt ./latc w głównym katalogu. Jest to zwykły skrypt bash, który wykonuje src/compile.py przy pomocy python3 z virtualenv zrobionego w katalogu venv/. compile.py tworzy plik \*.ll obok \*.lat. Po wykonaniu compile.py, uruchamia się clang łączący wygenerowany kod LLVM z biblioteką standardową Latte znajdującą się w src/stdlatte.c.
@@ -19,7 +30,6 @@ Następnie drzewo w latte_tree generuje kolejne bloki kodu w LLVM. Każdy wierzc
 # Struktura katalogów
 
 W src/ jest kod źródłowy programu.
-W lib/ jest jasmin.jar, potrzebny do wygenerowania .class.
 lattests/ oraz studentstests/ to testy stworzone odpowiednio przez wykładowcę i studentów.
 
 W src/ jest także plik run_antlr.sh, który uruchamia antlr4, oraz latte_tester.ipy, który w IPython3 uruchamia testy.
