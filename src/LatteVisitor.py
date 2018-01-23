@@ -99,8 +99,13 @@ class LatteVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by LatteParser#vtype.
-    def visitVtype(self, ctx:LatteParser.VtypeContext):
+    # Visit a parse tree produced by LatteParser#viden.
+    def visitViden(self, ctx:LatteParser.VidenContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LatteParser#varra.
+    def visitVarra(self, ctx:LatteParser.VarraContext):
         return self.visitChildren(ctx)
 
 
@@ -126,6 +131,11 @@ class LatteVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LatteParser#epare.
     def visitEpare(self, ctx:LatteParser.EpareContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LatteParser#eelem.
+    def visitEelem(self, ctx:LatteParser.EelemContext):
         return self.visitChildren(ctx)
 
 
@@ -171,6 +181,11 @@ class LatteVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by LatteParser#etrue.
     def visitEtrue(self, ctx:LatteParser.EtrueContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by LatteParser#enewarr.
+    def visitEnewarr(self, ctx:LatteParser.EnewarrContext):
         return self.visitChildren(ctx)
 
 

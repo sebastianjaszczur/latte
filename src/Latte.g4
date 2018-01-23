@@ -53,7 +53,8 @@ stmt
 // types
 
 vtype
-	: IDENT
+	: IDENT #viden
+	| vtype '[' ']' #varra
 	;
 
 // expr
@@ -75,7 +76,9 @@ expr
 	| <assoc=right> expr '&&' expr #eand
 	| <assoc=right> expr '||' expr #eor
 	| '(' IDENT ')' 'null' #enull
+	| 'new' vtype '[' expr ']' #enewarr
 	| 'new' IDENT #enew
+	| expr '[' expr ']' #eelem
 	| '(' expr ')' # epare
 	;
 

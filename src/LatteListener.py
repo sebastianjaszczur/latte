@@ -170,12 +170,21 @@ class LatteListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by LatteParser#vtype.
-    def enterVtype(self, ctx:LatteParser.VtypeContext):
+    # Enter a parse tree produced by LatteParser#viden.
+    def enterViden(self, ctx:LatteParser.VidenContext):
         pass
 
-    # Exit a parse tree produced by LatteParser#vtype.
-    def exitVtype(self, ctx:LatteParser.VtypeContext):
+    # Exit a parse tree produced by LatteParser#viden.
+    def exitViden(self, ctx:LatteParser.VidenContext):
+        pass
+
+
+    # Enter a parse tree produced by LatteParser#varra.
+    def enterVarra(self, ctx:LatteParser.VarraContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#varra.
+    def exitVarra(self, ctx:LatteParser.VarraContext):
         pass
 
 
@@ -221,6 +230,15 @@ class LatteListener(ParseTreeListener):
 
     # Exit a parse tree produced by LatteParser#epare.
     def exitEpare(self, ctx:LatteParser.EpareContext):
+        pass
+
+
+    # Enter a parse tree produced by LatteParser#eelem.
+    def enterEelem(self, ctx:LatteParser.EelemContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#eelem.
+    def exitEelem(self, ctx:LatteParser.EelemContext):
         pass
 
 
@@ -302,6 +320,15 @@ class LatteListener(ParseTreeListener):
 
     # Exit a parse tree produced by LatteParser#etrue.
     def exitEtrue(self, ctx:LatteParser.EtrueContext):
+        pass
+
+
+    # Enter a parse tree produced by LatteParser#enewarr.
+    def enterEnewarr(self, ctx:LatteParser.EnewarrContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#enewarr.
+    def exitEnewarr(self, ctx:LatteParser.EnewarrContext):
         pass
 
 

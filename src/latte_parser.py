@@ -2,9 +2,9 @@ from LatteParser import LatteParser
 from LatteVisitor import LatteVisitor
 from latte_tree import Program, VariablesBlock, Function, Block, Stmt, EOp, \
     EConst, SAssi, EVar, EmptyStmt, SIfElse, SReturn, SWhile, op_array, ECall, \
-    EUnaryOp, ENew, EAttr, EMeth
+    EUnaryOp, ENew, EAttr, EMeth, ENewArray, EElem
 from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
-    OR, VRef, VFun, VBool, VInt, VString, CompilationError, NEG, VClass
+    OR, VRef, VFun, VBool, VInt, VString, CompilationError, NEG, VClass, VArray
 
 
 class LLVMVariableException(Exception):
@@ -54,9 +54,9 @@ class LLVMVisitor(LatteVisitor):
             name = cls.name + "." + str(ctx.IDENT())
         else:
             name = str(ctx.IDENT())
-        return_type = self.program.name_to_type(str(ctx.vtype().IDENT()), ctx)
+        return_type = self.visit(ctx.vtype())
         arg_types = tuple(
-            [self.program.name_to_type(str(arg.vtype().IDENT()), arg)
+            [self.visit(arg.vtype())
              for arg in ctx.arg()])
         if cls:
             arg_types = (cls, ) + arg_types
@@ -88,7 +88,7 @@ class LLVMVisitor(LatteVisitor):
             class_type.copy_fields_methods(parent_vtype)
 
         for field in ctx.field():
-            vtype = self.program.name_to_type(str(field.vtype().IDENT()), field)
+            vtype = self.visit(field.vtype())
             field_name = str(field.IDENT())
             class_type.add_field(field_name, vtype, field)
 
@@ -114,9 +114,7 @@ class LLVMVisitor(LatteVisitor):
         args = ["this.class"] if cls else []
         for arg in ctx.arg():
             args.append(str(arg.IDENT()))
-            vars.add_variable(
-                str(arg.IDENT()),
-                self.program.name_to_type(str(arg.vtype().IDENT()), arg), arg)
+            vars.add_variable(str(arg.IDENT()), self.visit(arg.vtype()), arg)
 
         self.program.last_vars = vars
         self.program.current_function = name
@@ -179,16 +177,9 @@ class LLVMVisitor(LatteVisitor):
         return SAssi(texpr, vexpr, ctx)
 
     def visitSdecl(self, ctx: LatteParser.SdeclContext):
-        '''
-        for stmt in ctx.stmt():
-            if not isinstance(stmt, LatteParser.SdeclContext):
-                continue
-            vtype = self.program.name_to_type(str(stmt.vtype().IDENT()), stmt)
-            for item in stmt.item():
-                vars.add_variable(str(item.IDENT()), vtype, stmt)
-        '''
-        vtype = self.program.name_to_type(str(ctx.vtype().IDENT()), ctx)
-        if not isinstance(vtype, VClass) or vtype.is_void():
+        vtype = self.visit(ctx.vtype())
+        if not (isinstance(vtype, VClass) or isinstance(vtype, VArray))\
+                or vtype.is_void():
             raise CompilationError("type not declarable", ctx)
         tstmts = []
         for item in ctx.item():
@@ -376,6 +367,16 @@ class LLVMVisitor(LatteVisitor):
 
         return ECall(name, rtype, argtypes, args)
 
+    def visitEelem(self, ctx: LatteParser.EelemContext):
+        lexpr = self.visit(ctx.expr(0))
+        rexpr = self.visit(ctx.expr(1))
+        if not isinstance(lexpr.vtype.unref(), VArray):
+            raise CompilationError('invalid array', ctx)
+        if not rexpr.vtype.is_int():
+            raise CompilationError('invalid array index', ctx)
+        vtype = VRef(lexpr.vtype.unref().vtype)
+        return EElem(vtype, lexpr, rexpr)
+
     def visitEiden(self, ctx: LatteParser.EidenContext):
         name = str(ctx.IDENT())
         vtype = self.program.last_vars.get_variable(name, ctx)
@@ -409,6 +410,11 @@ class LLVMVisitor(LatteVisitor):
         vtype = self.program.name_to_type(classname, ctx)
         return ENew(vtype, ctx)
 
+    def visitEnewarr(self, ctx: LatteParser.EnewarrContext):
+        expr = self.visit(ctx.expr())
+        vtype = self.visit(ctx.vtype())
+        return ENewArray(vtype, expr, ctx)
+
     def visitErrorNode(self, node):
         raise CompilationError("unknown error", None)
 
@@ -416,9 +422,11 @@ class LLVMVisitor(LatteVisitor):
         # it should not happen
         assert False
 
-    def visitVtype(self, ctx: LatteParser.VtypeContext):
-        # it should not happen
-        assert False
+    def visitVarra(self, ctx: LatteParser.VarraContext):
+        return VArray(self.visit(ctx.vtype()))
+
+    def visitViden(self, ctx: LatteParser.VidenContext):
+        return self.program.name_to_type(str(ctx.IDENT()), ctx)
 
     def visitArg(self, ctx: LatteParser.ArgContext):
         # it should not happen

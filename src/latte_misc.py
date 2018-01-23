@@ -230,6 +230,18 @@ class VClass(VType):
             name=self.name, argtypes=argtypes)
 
 
+class VArray(VType):
+    def __init__(self, vtype: VType):
+        self.vtype = vtype
+        self.name = self.vtype.name + "[]"
+
+    def get_default_expr(self):
+        return latte_tree.EConst(self, [], None)
+
+    def llvm_type(self):
+        return "%struct.array*"
+
+
 def VBool():
     return VClass('boolean')
 

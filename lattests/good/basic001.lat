@@ -1,51 +1,19 @@
-class Point2 {
-  int x;
-  int y;
+/* void expression as statement */
 
-  void move (int dx, int dy) {
-     x = x + dx;
-     y = y + dy;
-  }
-
-  int getX () { return x; }
-
-  int getY () { return y; }
+int main() {
+  int[] a = new int[3];
+  f(a);
+  printInt(a[0]);
+  printInt(a[1]);
+  printInt(a[2]);
+  printInt(a.length);
+  return 0 ;
 }
 
-class Point3 extends Point2 {
-  int z;
-
-  void moveZ (int dz) {
-    z = z + dz;
-  }
-
-  int getZ () { return z; }
-
-}
-
-class Point4 extends Point3 {
-  int w;
-
-  void moveW (int dw) {
-    w = w + dw;
-  }
-
-  int getW () { return w; }
-
-}
-
-
-
-int main () {
-  Point2 p = new Point3;
-
-  Point3 q = new Point3;
-
-  Point4 r = new Point4;
-
-  r.moveW(2);
-
-  printInt(r.getW());
-  return 0;
-
+void f(int[] x) {
+	int a = 0;
+	while(a < x.length) {
+		x[a] = a * 111;
+		a = a + 1;
+	}
 }

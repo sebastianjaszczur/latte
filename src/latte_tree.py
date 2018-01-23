@@ -1,7 +1,7 @@
 from typing import List, Dict
 from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
     OR, SPECIAL, UID, VType, VFun, VClass, VBool, VInt, VString, VVoid, \
-    CompilationError, NEG, VRef
+    CompilationError, NEG, VRef, VArray
 
 
 def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType' = None) \
@@ -86,29 +86,52 @@ class Expr(object):
 class EAttr(Expr):
     def __init__(self, attr: str, expr: Expr, ctx):
         vtype_class = expr.vtype.unref()
-        if attr not in vtype_class.fields:
-            raise CompilationError('field not found in class', ctx)
-        _, vtype = vtype_class.fields[attr]
-        self.vtype = VRef(vtype)
-        self.expr = expr
-        self.attr = attr
-        self.ctx = ctx
+        if isinstance(vtype_class, VClass):
+            if attr not in vtype_class.fields:
+                raise CompilationError('field not found in class', ctx)
+            _, vtype = vtype_class.fields[attr]
+            self.vtype = VRef(vtype)
+            self.expr = expr
+            self.attr = attr
+            self.ctx = ctx
+        elif isinstance(vtype_class, VArray):
+            if attr != "length":
+                raise CompilationError('field not found in array', ctx)
+            self.vtype = VInt()
+            self.expr = expr
+            self.attr = attr
+            self.ctx = ctx
+        else:
+            raise CompilationError('unknown class/field', ctx)
 
     def get_code_lines(self, program: 'Program', keep_ref=False) \
             -> List['CodeLine']:
-        code_lines = self.expr.get_code_lines(program)
-        val = code_lines[-1].get_var_name()
+        if isinstance(self.expr.vtype.unref(), VArray):
+            code_lines = self.expr.get_code_lines(program)
+            val = code_lines[-1].get_var_name()
 
-        code_lines.append(CodeLine(
-            "getelementptr inbounds {unclass}, {type} {val}, i32 0, i32 {ind}"
-                .format(unclass=self.expr.vtype.unref().unclass_llvm_type(),
-                        type=self.expr.vtype.unref().llvm_type(), val=val,
-                        ind=self.expr.vtype.unref().fields[self.attr][0])))
-        if not keep_ref:
+            code_lines.append(CodeLine(
+                "getelementptr inbounds %struct.array, %struct.array* {val}, "
+                "i32 0, i32 0".format(val=val,)))
             register = code_lines[-1].get_var_name()
             code_lines.append(
                 load_address(program, self.vtype.unref(), register, self.ctx))
-        return code_lines
+            return code_lines
+        else:
+            code_lines = self.expr.get_code_lines(program)
+            val = code_lines[-1].get_var_name()
+
+            code_lines.append(CodeLine(
+                "getelementptr inbounds {unclass}, {type} {val}, i32 0, i32 {ind}"
+                    .format(unclass=self.expr.vtype.unref().unclass_llvm_type(),
+                            type=self.expr.vtype.unref().llvm_type(), val=val,
+                            ind=self.expr.vtype.unref().fields[self.attr][0])))
+            if not keep_ref:
+                register = code_lines[-1].get_var_name()
+                code_lines.append(
+                    load_address(program, self.vtype.unref(), register,
+                                 self.ctx))
+            return code_lines
 
 
 class EConst(Expr):
@@ -128,6 +151,9 @@ class EConst(Expr):
             code_line = CodeLine("add i1 0, {}".format(int(self.value)))
         elif self.vtype.is_string():
             code_line = program.constants.get_code_line(self.value)
+        elif isinstance(self.vtype, VArray):
+            code_line = CodeLine("getelementptr %struct.array, "
+                                 "%struct.array* @empty.array, i32 0")
         elif not self.vtype.is_void():
             # other class
             assert self.value is None
@@ -194,6 +220,98 @@ class ENew(Expr):
                     val=llname,
                     tar=code_lines[-1].get_var_name(),
                     type=vtype.llvm_type()), save_result=False))
+        return code_lines + [last_line]
+
+
+class EElem(Expr):
+    def __init__(self, vtype: VType, lexpr: Expr, rexpr: Expr):
+        self.vtype = vtype
+        self.lexpr = lexpr
+        self.rexpr = rexpr
+
+    def get_code_lines(self, program: 'Program', keep_ref=False):
+        code_lines = []
+        code_lines.extend(self.lexpr.get_code_lines(program))
+        code_lines.append(CodeLine(
+            "getelementptr inbounds %struct.array, %struct.array* {tarr},"
+            " i32 0, i32 1".format(tarr=code_lines[-1].get_var_name())))
+        code_lines.append(load_address(program, VRef(VInt()),
+                                       code_lines[-1].get_var_name(), None))
+        code_lines.append(CodeLine("bitcast i32* {res} to {type}*".format(
+            res=code_lines[-1].get_var_name(),
+            type=self.vtype.unref().llvm_type()
+        )))
+        array_ptr = code_lines[-1].get_var_name()
+        code_lines.extend(self.rexpr.get_code_lines(program))
+        index = code_lines[-1].get_var_name()
+        code_lines.append(CodeLine(
+            "getelementptr {type}, {type}* {arr}, i32 {index}".format(
+                type=self.vtype.unref().llvm_type(), arr=array_ptr,
+                index=index)))
+        if not keep_ref:
+            code_lines.append(load_address(program, self.vtype.unref(),
+                                           code_lines[-1].get_var_name(), None))
+        return code_lines
+
+
+class ENewArray(Expr):
+    def __init__(self, vtype: VType, expr: Expr, ctx):
+        self.vtype = VArray(vtype)
+        self.expr = expr
+        self.ctx = ctx
+
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
+            -> List['CodeLine']:
+
+        code_lines = []
+        code_lines.append(CodeLine(
+            "getelementptr %struct.array, %struct.array* null, i32 1"))
+        code_lines.append(CodeLine("ptrtoint %struct.array* {size} to i32".format(
+            size=code_lines[-1].get_var_name()
+        )))
+        code_lines.append(CodeLine("call i8* @malloc(i32 {size})".format(
+            size=code_lines[-1].get_var_name()
+        )))
+        code_lines.append(CodeLine("bitcast i8* {res} to %struct.array*".format(
+            res=code_lines[-1].get_var_name()
+        )))
+        tarr = code_lines[-1].get_var_name()
+        last_line = CodeLine("bitcast i8* {res} to %struct.array*".format(
+            res=code_lines[-2].get_var_name()
+        ))
+        # Initialization of length
+        code_lines.extend(self.expr.get_code_lines(program))
+        length = code_lines[-1].get_var_name()
+        code_lines.append(CodeLine(
+            "getelementptr inbounds %struct.array, %struct.array* {tarr}, i32 0"
+            ", i32 0".format(tarr=tarr)))
+        code_lines.append(CodeLine("store i32 {val}, i32* {tar}".format(
+                val=length, tar=code_lines[-1].get_var_name()),
+            save_result=False))
+        # Initialization of actual array
+        code_lines.append(CodeLine(
+            "getelementptr {type}, {type}* null, i32 {length}"
+            .format(type=self.vtype.vtype.llvm_type(),
+                    length=length)))
+        code_lines.append(
+            CodeLine("ptrtoint {type}* {size} to i32".format(
+                type=self.vtype.vtype.llvm_type(),
+                size=code_lines[-1].get_var_name()
+            )))
+        code_lines.append(CodeLine("call i8* @malloc(i32 {size})".format(
+            size=code_lines[-1].get_var_name()
+        )))
+        code_lines.append(CodeLine("bitcast i8* {res} to i32*".format(
+            res=code_lines[-1].get_var_name()
+        )))
+        pointer = code_lines[-1].get_var_name()
+        code_lines.append(CodeLine(
+            "getelementptr inbounds %struct.array, %struct.array* {tarr}, i32 0"
+            ", i32 1".format(tarr=tarr)))
+        code_lines.append(CodeLine("store i32* {val}, i32** {tar}".format(
+            val=pointer, tar=code_lines[-1].get_var_name()),
+            save_result=False))
+
         return code_lines + [last_line]
 
 
@@ -494,6 +612,11 @@ class Program(object):
         source += "declare i8* @malloc(i32)\n"
 
         source += "declare i8* @op_addString(i8*, i8*)\n"
+        source += "\n"
+
+        source += "%struct.array = type { i32, i32* }\n"
+        source += ("@empty.array = internal constant "
+                   "%struct.array {i32 0, i32* null}\n")
         source += "\n"
         for typename in self.types:
             line = self.types[typename].get_source()
