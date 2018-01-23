@@ -101,9 +101,9 @@ class EAttr(Expr):
 
         code_lines.append(CodeLine(
             "getelementptr inbounds {unclass}, {type} {val}, i32 0, i32 {ind}"
-            .format(unclass=self.expr.vtype.unref().unclass_llvm_type(),
-                    type=self.expr.vtype.unref().llvm_type(), val=val,
-                    ind=self.expr.vtype.unref().fields[self.attr][0])))
+                .format(unclass=self.expr.vtype.unref().unclass_llvm_type(),
+                        type=self.expr.vtype.unref().llvm_type(), val=val,
+                        ind=self.expr.vtype.unref().fields[self.attr][0])))
         if not keep_ref:
             register = code_lines[-1].get_var_name()
             code_lines.append(
@@ -131,7 +131,8 @@ class EConst(Expr):
         elif not self.vtype.is_void():
             # other class
             assert self.value is None
-            code_line = CodeLine("getelementptr {type}, {type}* null, i32 0".format(
+            code_line = CodeLine(
+                "getelementptr {type}, {type}* null, i32 0".format(
                     type=self.vtype.unref().unclass_llvm_type()))
         else:
             raise CompilationError("type not supported for consts", self.ctx)
@@ -140,6 +141,7 @@ class EConst(Expr):
 
 class ENew(Expr):
     def __init__(self, vtype: VType, ctx):
+        assert isinstance(vtype, VClass)
         self.vtype = vtype
         self.ctx = ctx
 
@@ -150,7 +152,7 @@ class ENew(Expr):
             "getelementptr {unclass}, {type} null, i32 1".format(
                 type=self.vtype.llvm_type(),
                 unclass=self.vtype.unclass_llvm_type()
-        )))
+            )))
         code_lines.append(CodeLine("ptrtoint {type} {size} to i32".format(
             type=self.vtype.llvm_type(), size=code_lines[-1].get_var_name()
         )))
@@ -160,7 +162,39 @@ class ENew(Expr):
         code_lines.append(CodeLine("bitcast i8* {res} to {type}".format(
             type=self.vtype.llvm_type(), res=code_lines[-1].get_var_name()
         )))
-        return code_lines
+        last_line = CodeLine("bitcast i8* {res} to {type}".format(
+            type=self.vtype.llvm_type(), res=code_lines[-2].get_var_name()
+        ))
+        reg_class = code_lines[-1].get_var_name()
+        for field_name in self.vtype.fields:
+            field_index, field_type = self.vtype.fields[field_name]
+            code_lines.extend(field_type.get_default_expr()
+                              .get_code_lines(program))
+            code_lines.append(CodeLine(
+                "getelementptr inbounds {unclass}, {type} {val}, i32 0, i32 "
+                "{ind}".format(unclass=self.vtype.unclass_llvm_type(),
+                               type=self.vtype.llvm_type(),
+                               val=reg_class,
+                               ind=field_index)))
+            s_code_line = CodeLine("store {type} {val}, {type}* {tar}".format(
+                val=code_lines[-2].get_var_name(),
+                tar=code_lines[-1].get_var_name(),
+                type=field_type.llvm_type()), save_result=False)
+            code_lines.append(s_code_line)
+        for method_name in self.vtype.methods:
+            method_index, vtype, llname = self.vtype.methods[method_name]
+            code_lines.append(CodeLine(
+                "getelementptr inbounds {unclass}, {type} {val}, i32 0, i32 "
+                "{ind}".format(unclass=self.vtype.unclass_llvm_type(),
+                               type=self.vtype.llvm_type(),
+                               val=reg_class,
+                               ind=method_index)))
+            code_lines.append(CodeLine(
+                "store {type} @f_{val}, {type}* {tar}".format(
+                    val=llname,
+                    tar=code_lines[-1].get_var_name(),
+                    type=vtype.llvm_type()), save_result=False))
+        return code_lines + [last_line]
 
 
 def load_address(program, vtype: VType, register: str, ctx) -> 'CodeLine':
@@ -265,7 +299,7 @@ class EOp(Expr):
                                            save_result=False))
                 code_lines.append(CodeLine(
                     "phi i1 [{lval}, %ISLAZY{uid}], [{rval}, %WORKED{uid}]"
-                    .format(lval=lval, rval=rval, uid=uid)
+                        .format(lval=lval, rval=rval, uid=uid)
                 ))
             else:
                 raise NotImplementedError()
@@ -288,6 +322,14 @@ class ECall(Expr):
         arg_strings = []
         for (arg, argtype) in zip(self.args, self.argtypes):
             code_lines.extend(arg.get_code_lines(program))
+            if arg.vtype != argtype:
+                assert arg.vtype.unref().is_children_of(argtype)
+                code_lines.append(CodeLine(
+                    "bitcast {vtype} {v_val} to {ttype}".format(
+                        vtype=arg.vtype.unref().llvm_type(),
+                        v_val=code_lines[-1].get_var_name(),
+                        ttype=argtype.llvm_type()
+                    )))
             argval = code_lines[-1].get_var_name()
             assert isinstance(argtype, VType)
             arg_strings.append("{} {}".format(argtype.llvm_type(), argval))
@@ -298,6 +340,52 @@ class ECall(Expr):
             args=", ".join(arg_strings)
         ), save_result=(not rtype.is_void()))
         return code_lines + [call_line]
+
+
+class EMeth(Expr):
+    def __init__(self, name: str, vfun: VFun, cls: VClass, rtype: VType,
+                 argtypes: List[VType], args: List[Expr]):
+        self.name = name
+        self.vtype = rtype
+        self.vfun = vfun
+        self.rtype = rtype
+        self.cls = cls
+        self.argtypes = argtypes
+        self.args = args
+
+    def get_code_lines(self, program: 'Program', keep_ref=False) \
+            -> List['CodeLine']:
+        code_lines = []
+        arg_strings = []
+        for (arg, argtype) in zip(self.args, self.argtypes):
+            code_lines.extend(arg.get_code_lines(program))
+            if arg.vtype != argtype:
+                assert arg.vtype.unref().is_children_of(argtype)
+                code_lines.append(CodeLine(
+                    "bitcast {vtype} {v_val} to {ttype}".format(
+                        vtype=arg.vtype.unref().llvm_type(),
+                        v_val=code_lines[-1].get_var_name(),
+                        ttype=argtype.llvm_type()
+                    )))
+            argval = code_lines[-1].get_var_name()
+            assert isinstance(argtype, VType)
+            arg_strings.append("{} {}".format(argtype.llvm_type(), argval))
+
+        code_lines.append(CodeLine(
+            "getelementptr inbounds {unclass}, {type_val}, i32 0, i32 {ind}"
+            .format(unclass=self.cls.unref().unclass_llvm_type(),
+                    type_val=arg_strings[0], ind=self.cls.methods[self.name][0]
+                    )))
+        code_lines.append(load_address(program, self.vfun,
+                                       code_lines[-1].get_var_name(), None))
+        freg = code_lines[-1].get_var_name()
+
+        call_line = CodeLine("call {rtype} {freg}({args})".format(
+            rtype=self.rtype.llvm_type(), freg=freg,
+            args=", ".join(arg_strings)
+        ), save_result=(not self.rtype.is_void()))
+        return code_lines + [call_line]
+
 
 
 class VariablesBlock(object):
@@ -688,21 +776,30 @@ class Block(Stmt):
 
 class Function(object):
     def __init__(self, name: str, field_vars: VariablesBlock,
-                 arg_vars: VariablesBlock, block: Block, args: List[str], ctx):
+                 arg_vars: VariablesBlock, block: Block, args: List[str],
+                 cls: VClass, ctx):
         self.name = name
         self.block = block
         self.ctx = ctx
         self.args = args
         self.field_vars = field_vars
         self.arg_vars = arg_vars
+        self.cls = cls
 
     def get_code_blocks(self, program: Program) -> List['CodeBlock']:
         code_blocks = self.block.get_code_blocks(program)
 
         # Make initialization code block
         init_codelines = []
-        if "this.class" in self.arg_vars.vars:
-            classtype = self.arg_vars.get_variable("this.class", self.ctx)
+        if self.cls:
+            init_codelines = [CodeLine(
+                "{var} = bitcast {vtype} {v_val} to {ttype}".format(
+                    var="%this.class.good",
+                    vtype=self.arg_vars.get_variable("this.class",
+                                                     self.ctx).llvm_type(),
+                    v_val="%this.class",
+                    ttype=self.cls.llvm_type()
+                ), save_result=False)]
             for varname in self.field_vars.vars:
                 reg_varname = self.field_vars.get_variable_name(varname, None)
                 vtype = self.field_vars.vars[varname]
@@ -711,10 +808,11 @@ class Function(object):
                         "{var} = getelementptr inbounds {unclass}, {type} {val}"
                         ", i32 0, i32 {ind}".format(
                             var=reg_varname,
-                            unclass=classtype.unref()
-                            .unclass_llvm_type(),
-                            type=classtype.llvm_type(),
-                            val="%this.class", ind=classtype.fields[varname][0]
+                            unclass=self.cls.unref()
+                                .unclass_llvm_type(),
+                            type=self.cls.llvm_type(),
+                            val="%this.class.good",
+                            ind=self.cls.fields[varname][0]
                         ), save_result=False))
                 else:
                     raise CompilationError('unexpected argument type', self.ctx)
@@ -726,10 +824,16 @@ class Function(object):
                 init_codelines.append(CodeLine("{var} = alloca {type}".format(
                     var=reg_varname, type=vtype.llvm_type()),
                     save_result=False))
-                init_codelines.append(CodeLine(
-                    "store {type} %{var}, {type}* {b_var}".format(
-                        var=varname, b_var=reg_varname,
-                        type=vtype.llvm_type()), save_result=False))
+                if varname == "self":
+                    init_codelines.append(CodeLine(
+                        "store {type} %{var}, {type}* {b_var}".format(
+                            var="this.class.good", b_var=reg_varname,
+                            type=vtype.llvm_type()), save_result=False))
+                else:
+                    init_codelines.append(CodeLine(
+                        "store {type} %{var}, {type}* {b_var}".format(
+                            var=varname, b_var=reg_varname,
+                            type=vtype.llvm_type()), save_result=False))
             else:
                 raise CompilationError('unexpected argument type', self.ctx)
         if code_blocks:

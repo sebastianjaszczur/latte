@@ -2,7 +2,7 @@ from LatteParser import LatteParser
 from LatteVisitor import LatteVisitor
 from latte_tree import Program, VariablesBlock, Function, Block, Stmt, EOp, \
     EConst, SAssi, EVar, EmptyStmt, SIfElse, SReturn, SWhile, op_array, ECall, \
-    EUnaryOp, ENew, EAttr
+    EUnaryOp, ENew, EAttr, EMeth
 from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
     OR, VRef, VFun, VBool, VInt, VString, CompilationError, NEG, VClass
 
@@ -20,11 +20,6 @@ class LLVMVisitor(LatteVisitor):
     def visitProgram(self, ctx: LatteParser.ProgramContext):
         for classdef in ctx.classdef():
             self.addClassdefType(classdef)
-        for classdef in ctx.classdef():
-            class_type = self.program.name_to_type(str(classdef.IDENT()),
-                                                   classdef)
-            for fundef in classdef.fundef():
-                self.addFundefType(fundef, class_type)
         for fundef in ctx.fundef():
             self.addFundefType(fundef)
 
@@ -56,7 +51,7 @@ class LLVMVisitor(LatteVisitor):
 
     def addFundefType(self, ctx: LatteParser.FundefContext, cls: VClass=None):
         if cls:
-            name = cls.name + str(ctx.IDENT())
+            name = cls.name + "." + str(ctx.IDENT())
         else:
             name = str(ctx.IDENT())
         return_type = self.program.name_to_type(str(ctx.vtype().IDENT()), ctx)
@@ -66,8 +61,11 @@ class LLVMVisitor(LatteVisitor):
         if cls:
             arg_types = (cls, ) + arg_types
 
-        self.program.globals.add_variable(name, VFun(return_type, arg_types),
-                                          ctx)
+        vtype = VFun(return_type, arg_types)
+        if cls:
+            cls.add_method(str(ctx.IDENT()), vtype, name, ctx)
+            _, vtype, _ = cls.methods[str(ctx.IDENT())]
+        self.program.globals.add_variable(name, vtype, ctx)
 
     def addClassdefType(self, ctx: LatteParser.ClassdefContext):
         name = str(ctx.IDENT())
@@ -87,24 +85,31 @@ class LLVMVisitor(LatteVisitor):
             parent_vtype = self.program.name_to_type(class_type.parent_name,
                                                      ctx)
             class_type.parent_type = parent_vtype
-            class_type.copy_fields(parent_vtype)
+            class_type.copy_fields_methods(parent_vtype)
+
         for field in ctx.field():
             vtype = self.program.name_to_type(str(field.vtype().IDENT()), field)
             field_name = str(field.IDENT())
             class_type.add_field(field_name, vtype, field)
 
+        for fundef in ctx.fundef():
+            self.addFundefType(fundef, class_type)
+
     def visitFundef(self, ctx: LatteParser.FundefContext, cls: VClass=None):
         if cls:
-            name = cls.name + str(ctx.IDENT())
+            name = cls.name + "." + str(ctx.IDENT())
         else:
             name = str(ctx.IDENT())
 
         fields = VariablesBlock(self.program.globals)
         vars = VariablesBlock(fields)
+
         if cls:
             for field_name in cls.fields:
                 fields.add_variable(field_name, cls.fields[field_name][1], ctx)
-            vars.add_variable("this.class", cls, ctx)
+            _, vtype, _ = cls.methods[str(ctx.IDENT())]
+            vars.add_variable("this.class", vtype.params[0], ctx)
+            vars.add_variable("self", cls, ctx)
 
         args = ["this.class"] if cls else []
         for arg in ctx.arg():
@@ -121,7 +126,7 @@ class LLVMVisitor(LatteVisitor):
         self.program.current_function = None
         self.program.last_vars = None
 
-        function = Function(name, fields, vars, block, args, ctx)
+        function = Function(name, fields, vars, block, args, cls, ctx)
         self.program.functions[name] = function
 
     def visitBlock(self, ctx: LatteParser.BlockContext):
@@ -335,6 +340,26 @@ class LLVMVisitor(LatteVisitor):
         _, vtype = op_array(ctx, op, lexpr.vtype, rexpr.vtype)
         return EOp(vtype, lexpr, rexpr, op, ctx)
 
+    def visitEmeth(self, ctx: LatteParser.EmethContext):
+        name = str(ctx.IDENT())
+        obj = self.visit(ctx.expr(0))
+        if name not in obj.vtype.unref().methods:
+            raise CompilationError("method not found", ctx)
+        field_index, vtype, llname = obj.vtype.unref().methods[name]
+        assert isinstance(vtype, VFun)
+        rtype = vtype.unref().rtype
+        argtypes = vtype.params
+        args = [self.visit(expr) for expr in ctx.expr()]
+
+        print(args, argtypes)
+        if len(argtypes) != len(args):
+            raise CompilationError("wrong number of arguments in a call", ctx)
+        for arg, argtype in zip(args, argtypes):
+            if not arg.vtype.unref().is_children_of(argtype):
+                raise CompilationError("wrong type of an argument", ctx)
+
+        return EMeth(name, vtype, obj.vtype.unref(), rtype, argtypes, args)
+
     def visitEcall(self, ctx: LatteParser.EcallContext):
         name = str(ctx.IDENT())
         vtype = self.program.globals.get_variable(name, ctx)
@@ -346,7 +371,7 @@ class LLVMVisitor(LatteVisitor):
         if len(argtypes) != len(args):
             raise CompilationError("wrong number of arguments in a call", ctx)
         for arg, argtype in zip(args, argtypes):
-            if arg.vtype != argtype:
+            if not arg.vtype.unref().is_children_of(argtype):
                 raise CompilationError("wrong type of an argument", ctx)
 
         return ECall(name, rtype, argtypes, args)

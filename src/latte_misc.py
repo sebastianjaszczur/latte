@@ -132,9 +132,21 @@ class VFun(VType):
             rtype)
 
     def llvm_type(self):
-        return "{} ({})".format(
+        return "{} ({})*".format(
             self.rtype.llvm_type(),
             ", ".join(param.llvm_type() for param in self.params))
+
+    def inheritable(self, other):
+        if not isinstance(other, VFun):
+            return False
+        if self.rtype != other.rtype:
+            return False
+        if len(self.params) != len(other.params):
+            return False
+        for spar, opar in list(zip(self.params, other.params))[1:]:
+            if spar != opar:
+                return False
+        return True
 
 
 class VClass(VType):
@@ -142,13 +154,10 @@ class VClass(VType):
         assert isinstance(name, str)
         self.name = name
         self.fields = dict()  # name -> (field_index, VType)
+        self.methods = dict()  # name -> (field_index, VType, llname:str)
         self.parent_name = parent_name
         self.parent_type = None
         self.ctx = ctx
-
-    def get_source(self):
-        # TODO: get_source, and call it in Program
-        raise NotImplementedError()
 
     def get_default_expr(self):
         if self.is_int():
@@ -183,20 +192,40 @@ class VClass(VType):
     def add_field(self, field_name: str, vtype: VType, ctx):
         if field_name in self.fields:
             raise CompilationError('field name redeclaration', ctx)
-        self.fields[field_name] = (len(self.fields), vtype)
+        self.fields[field_name] = (len(self.fields) + len(self.methods), vtype)
 
-    def copy_fields(self, parent_class):
-        assert len(self.fields) == 0
+    def add_method(self, method_name: str, vtype: VType, llname: str, ctx):
+        if method_name in self.methods:
+            old_index, old_vtype, _ = self.methods[method_name]
+            if not old_vtype.inheritable(vtype):
+                raise CompilationError('virtual method has incorrect type', ctx)
+            self.methods[method_name] = (old_index, old_vtype, llname)
+        else:
+            self.methods[method_name] = (len(self.fields) + len(self.methods),
+                                         vtype, llname)
+
+    def copy_fields_methods(self, parent_class: 'VClass'):
+        print(self.fields, self.methods)
+        assert len(self.fields) == 0 and len(self.methods) == 0
         for field_name in parent_class.fields:
             self.fields[field_name] = parent_class.fields[field_name]
+        for method_name in parent_class.methods:
+            self.methods[method_name] = parent_class.methods[method_name]
 
     def get_source(self):
         if self.is_intboolstring() or self.is_void():
             return ""
         argtypes = []
-        for fieldindex, fieldtype in sorted(self.fields.values()):
-            argtypes.append(fieldtype.llvm_type())
+        for field_or_method_tuple in sorted(list(self.fields.values()) +
+                                            list(self.methods.values())):
+            if len(field_or_method_tuple) == 2:
+                fieldindex, fieldtype = field_or_method_tuple
+                argtypes.append(fieldtype.llvm_type())
+            else:
+                methodindex, methodtype, llname = field_or_method_tuple
+                argtypes.append(methodtype.llvm_type())
         argtypes = ", ".join(argtypes)
+
         return "%struct.s{name} = type {{ {argtypes} }}".format(
             name=self.name, argtypes=argtypes)
 

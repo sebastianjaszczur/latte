@@ -1,20 +1,51 @@
-int main() {
-	printString("hello");
-	A x = new A;
-	x.a = 3;
-	return 0;
+class Point2 {
+  int x;
+  int y;
+
+  void move (int dx, int dy) {
+     x = x + dx;
+     y = y + dy;
+  }
+
+  int getX () { return x; }
+
+  int getY () { return y; }
 }
 
-class A {
-	int a;
-	A next;
+class Point3 extends Point2 {
+  int z;
 
-	int getA() {
-		return a;
-	}
+  void moveZ (int dz) {
+    z = z + dz;
+  }
+
+  int getZ () { return z; }
+
 }
 
-class B extends A {
-	int b;
-	boolean c;
+class Point4 extends Point3 {
+  int w;
+
+  void moveW (int dw) {
+    w = w + dw;
+  }
+
+  int getW () { return w; }
+
+}
+
+
+
+int main () {
+  Point2 p = new Point3;
+
+  Point3 q = new Point3;
+
+  Point4 r = new Point4;
+
+  r.moveW(2);
+
+  printInt(r.getW());
+  return 0;
+
 }
