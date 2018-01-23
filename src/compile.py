@@ -12,7 +12,7 @@ HELP = "Run this program with code.lat argument only."
 EXTENSION_LATTE = ".lat"
 EXTENSION_LL = ".ll"
 
-DEBUG = True
+DEBUG = False
 
 
 def print_debug(*args, **kwargs):
