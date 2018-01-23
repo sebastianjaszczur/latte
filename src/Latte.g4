@@ -47,6 +47,7 @@ stmt
 	| 'return' expr? ';' # sretu
 	| 'if' '(' expr ')' stmt ('else' stmt)? # sifel
 	| 'while' '(' expr ')' stmt # swhil
+	| 'for' '(' vtype IDENT ':' expr ')' stmt # sfor
 	| expr ';' #sexpr
 	;
 
@@ -65,6 +66,7 @@ expr
 	| STRING #estrv
 	| 'false' #efals
 	| 'true' #etrue
+	| expr '[' expr ']' #eelem
 	| IDENT '(' (expr (',' expr)*)? ')' #ecall
 	| expr '.' IDENT '(' (expr (',' expr)*)? ')' #emeth
 	| expr '.' IDENT #eattr
@@ -78,7 +80,6 @@ expr
 	| '(' IDENT ')' 'null' #enull
 	| 'new' vtype '[' expr ']' #enewarr
 	| 'new' IDENT #enew
-	| expr '[' expr ']' #eelem
 	| '(' expr ')' # epare
 	;
 

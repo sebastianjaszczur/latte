@@ -94,6 +94,11 @@ class LatteVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by LatteParser#sfor.
+    def visitSfor(self, ctx:LatteParser.SforContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by LatteParser#sexpr.
     def visitSexpr(self, ctx:LatteParser.SexprContext):
         return self.visitChildren(ctx)

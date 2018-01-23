@@ -161,6 +161,15 @@ class LatteListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by LatteParser#sfor.
+    def enterSfor(self, ctx:LatteParser.SforContext):
+        pass
+
+    # Exit a parse tree produced by LatteParser#sfor.
+    def exitSfor(self, ctx:LatteParser.SforContext):
+        pass
+
+
     # Enter a parse tree produced by LatteParser#sexpr.
     def enterSexpr(self, ctx:LatteParser.SexprContext):
         pass

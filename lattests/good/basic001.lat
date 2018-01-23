@@ -1,19 +1,30 @@
 /* void expression as statement */
 
 int main() {
-  int[] a = new int[3];
-  f(a);
-  printInt(a[0]);
-  printInt(a[1]);
-  printInt(a[2]);
-  printInt(a.length);
+  int[] a = fib(10);
+  printAI(a);
   return 0 ;
 }
 
-void f(int[] x) {
-	int a = 0;
-	while(a < x.length) {
-		x[a] = a * 111;
-		a = a + 1;
+void printAI(int[] x) {
+	printString("AI:");
+	for(int e: x) {
+		printInt(e);
 	}
+}
+
+int[] fib(int x) {
+	int[] arr = new int[x];
+	if( x <= 0 )
+		return arr;
+	arr[0] = 1;
+	if( x <= 1)
+		return arr;
+	arr[1] = 1;
+	int i = 2;
+	while(i < x) {
+		arr[i] = arr[i-1] + arr[i-2];
+		i = i + 1;
+	}
+	return arr;
 }

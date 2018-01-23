@@ -4,7 +4,8 @@ from latte_tree import Program, VariablesBlock, Function, Block, Stmt, EOp, \
     EConst, SAssi, EVar, EmptyStmt, SIfElse, SReturn, SWhile, op_array, ECall, \
     EUnaryOp, ENew, EAttr, EMeth, ENewArray, EElem
 from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
-    OR, VRef, VFun, VBool, VInt, VString, CompilationError, NEG, VClass, VArray
+    OR, VRef, VFun, VBool, VInt, VString, CompilationError, NEG, VClass, VArray, \
+    UID
 
 
 class LLVMVariableException(Exception):
@@ -244,6 +245,72 @@ class LLVMVisitor(LatteVisitor):
                 "declaration not allowed directly in while-body", ctx)
         body = self.visit(ctx.stmt())
         return SWhile(condition, body)
+
+    def visitSfor(self, ctx: LatteParser.SforContext):
+        array = self.visit(ctx.expr())
+        if not isinstance(array.vtype.unref(), VArray):
+            raise CompilationError('not iterable type', ctx.expr())
+        vtype = self.visit(ctx.vtype())
+        if array.vtype.unref().vtype != vtype:
+            raise CompilationError('type doesn\'t match with iterable', ctx)
+        varname = str(ctx.IDENT())
+        itername = "iter.{}".format(UID.get_uid())
+        # Outer block creation
+        vars = VariablesBlock(self.program.last_vars)
+        last_vars = self.program.last_vars
+        self.program.last_vars = vars
+        out_block = Block(vars)
+
+        self.program.last_vars.add_variable(itername, VInt(), None)
+        texpr = EVar(self.program.last_vars.get_variable_name(itername, None),
+                     VRef(VInt()), None)
+        out_block.stmts.append(SAssi(texpr, EConst(VInt(), 0, None), None))
+
+        # Inner block creation
+
+        vars2 = VariablesBlock(self.program.last_vars)
+        last_vars2 = self.program.last_vars
+        self.program.last_vars = vars2
+        in_block = Block(vars2)
+
+        self.program.last_vars.add_variable(varname, vtype, ctx)
+        texpr2 = EVar(self.program.last_vars.get_variable_name(varname, ctx),
+                     VRef(vtype), ctx)
+        in_block.stmts.append(SAssi(texpr2, EElem(
+            VRef(vtype),
+            array,
+            EVar(self.program.last_vars.get_variable_name(itername, None),
+                 VRef(VInt()), None)
+        ), None))
+        in_block.stmts.append(SAssi(
+            EVar(self.program.last_vars.get_variable_name(itername, None),
+                 VRef(VInt()), None),
+            EOp(VInt(),
+                EVar(self.program.last_vars.get_variable_name(itername, None), VRef(VInt()), None),
+                EConst(VInt(), 1, None),
+                ADD, None), None))
+        body = self.visit(ctx.stmt())
+        in_block.stmts.append(body)
+
+        self.program.last_vars = last_vars2
+
+        # Cond creation
+        cond = EOp(
+            VBool(),
+            EVar(self.program.last_vars.get_variable_name(itername, None), VRef(VInt()), None),
+            EAttr("length", array, None), LT, None
+        )
+
+        # While creation
+        whil = SWhile(cond, in_block)
+
+        out_block.stmts.append(whil)
+
+        self.program.last_vars = last_vars
+
+        return out_block
+
+        raise NotImplementedError()
 
     def visitEpare(self, ctx:LatteParser.EpareContext):
         return self.visit(ctx.expr())
