@@ -51,7 +51,10 @@ def main(dir="lattests/bad/", expected_good=True):
 
 if __name__ == "__main__":
     not_expected = 0
-    for good_dir in ["lattests/good/", "studentstests/good/basic/"]:
+    for good_dir in ["lattests/good/", "studentstests/good/basic/",
+                     "lattests/extensions/objects1/",
+                     "lattests/extensions/objects2/",
+                     "lattests/extensions/struct/"]:
         not_expected += main(good_dir, True)
 
     print()
