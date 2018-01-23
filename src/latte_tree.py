@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List
 from latte_misc import MUL, DIV, MOD, ADD, SUB, LT, LE, GT, GE, EQ, NE, AND, \
     OR, SPECIAL, UID, VType, VFun, VClass, VBool, VInt, VString, VVoid, \
     CompilationError, NEG, VRef, VArray

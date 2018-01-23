@@ -1,5 +1,3 @@
-from typing import Dict, List
-
 from antlr4.error.ErrorListener import ErrorListener
 
 import latte_tree

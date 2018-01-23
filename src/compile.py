@@ -1,4 +1,3 @@
-import os
 import sys
 
 from antlr4 import InputStream, CommonTokenStream
@@ -6,7 +5,7 @@ from antlr4.tree.Tree import TerminalNodeImpl
 
 from LatteLexer import LatteLexer
 from LatteParser import LatteParser
-from latte_parser import LLVMVariableException, LLVMVisitor
+from latte_visitor import LLVMVisitor
 from latte_misc import ErrorRaiser, CompilationError
 
 HELP = "Run this program with code.lat argument only."
