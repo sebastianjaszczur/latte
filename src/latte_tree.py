@@ -373,7 +373,7 @@ class EMeth(Expr):
 
         code_lines.append(CodeLine(
             "getelementptr inbounds {unclass}, {type_val}, i32 0, i32 {ind}"
-            .format(unclass=self.cls.unref().unclass_llvm_type(),
+            .format(unclass=self.argtypes[0].unref().unclass_llvm_type(),
                     type_val=arg_strings[0], ind=self.cls.methods[self.name][0]
                     )))
         code_lines.append(load_address(program, self.vfun,
