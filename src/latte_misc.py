@@ -205,7 +205,6 @@ class VClass(VType):
                                          vtype, llname)
 
     def copy_fields_methods(self, parent_class: 'VClass'):
-        print(self.fields, self.methods)
         assert len(self.fields) == 0 and len(self.methods) == 0
         for field_name in parent_class.fields:
             self.fields[field_name] = parent_class.fields[field_name]

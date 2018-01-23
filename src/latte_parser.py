@@ -80,9 +80,7 @@ class LLVMVisitor(LatteVisitor):
         name = str(ctx.IDENT())
         class_type = self.program.name_to_type(name, ctx)
         assert isinstance(class_type, VClass)
-        print("Class {} extends {}".format(name, class_type.parent_name))
         if class_type.parent_name:
-            print("Copying fields from {} to {}".format(name, class_type.parent_name))
             parent_vtype = self.program.name_to_type(class_type.parent_name,
                                                      ctx)
             class_type.parent_type = parent_vtype
@@ -227,10 +225,10 @@ class LLVMVisitor(LatteVisitor):
         rtype = funtype.rtype
         if ctx.expr():
             rexpr = self.visit(ctx.expr())
-            if rexpr.vtype == rtype:
-                return SReturn(ctx, rexpr)
+            if rexpr.vtype.unref().is_children_of(rtype.unref()):
+                return SReturn(ctx, rtype.unref(), rexpr)
         elif rtype.is_void():
-            return SReturn(ctx)
+            return SReturn(ctx, rtype)
         raise CompilationError("invalid return statement", ctx)
 
     def visitSsemi(self, ctx: LatteParser.SsemiContext):
@@ -251,7 +249,7 @@ class LLVMVisitor(LatteVisitor):
         if not isinstance(array.vtype.unref(), VArray):
             raise CompilationError('not iterable type', ctx.expr())
         vtype = self.visit(ctx.vtype())
-        if array.vtype.unref().vtype != vtype:
+        if not array.vtype.unref().vtype.is_children_of(vtype):
             raise CompilationError('type doesn\'t match with iterable', ctx)
         varname = str(ctx.IDENT())
         itername = "iter.{}".format(UID.get_uid())
@@ -409,7 +407,6 @@ class LLVMVisitor(LatteVisitor):
         argtypes = vtype.params
         args = [self.visit(expr) for expr in ctx.expr()]
 
-        print(args, argtypes)
         if len(argtypes) != len(args):
             raise CompilationError("wrong number of arguments in a call", ctx)
         for arg, argtype in zip(args, argtypes):

@@ -60,14 +60,15 @@ int main(){
         fun2(elem).print();
     }
 
-    // Porownywanie z podtypem.
+    // Porownywanie.
     B t1 = new B;
     A t2 = t1;
+    A t3 = t1;
 
-    if (t1 == t2) {
+    if (t3 == t2) {
         printString("tak");
     }
-    if (t1 != t2) {
+    if (t3 != t2) {
         printString("nie");
     }
 

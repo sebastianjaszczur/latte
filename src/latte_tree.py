@@ -61,7 +61,6 @@ def op_array(ctx, op: str, vtype1: 'VType', vtype2: 'VType' = None) \
             return 'icmp eq {} {{}}, {{}}'.format(type_name), VBool()
         elif op == NE:
             return 'icmp ne {} {{}}, {{}}'.format(type_name), VBool()
-    # TODO: add EQ and NE for classes
     # Other
     raise CompilationError("invalid operator", ctx)
 
@@ -577,8 +576,6 @@ class Program(object):
             self.types[typ] = VClass(typ)
         self.globals = VariablesBlock()
         self.constants = Constants()
-        # TODO: remove the line below
-        # self.classes = dict()  # name -> Class
         self.last_vars = self.globals
         self.functions = dict()  # name -> Function
         self.current_function = None
@@ -705,7 +702,6 @@ class SAssi(Stmt):
                 val=v_val, tar=t_var, type=ttype.llvm_type()),
                 save_result=False)
         else:
-            print(vtype)
             raise CompilationError("invalid assignment", self.ctx)
 
         # br_line
@@ -807,8 +803,9 @@ class SWhile(Stmt):
 
 
 class SReturn(Stmt):
-    def __init__(self, ctx, expr=None):
+    def __init__(self, ctx, tvtype: VType, expr=None):
         self.expr = expr
+        self.tvtype = tvtype
         self.ctx = ctx
 
     def get_code_blocks(
@@ -817,8 +814,15 @@ class SReturn(Stmt):
         del next_code_block  # We won't go there, because we return.
         if self.expr:
             codelines = self.expr.get_code_lines(program)
+            if self.expr.vtype.unref() != self.tvtype.unref():
+                codelines.append(CodeLine(
+                    "bitcast {vtype} {v_val} to {ttype}".format(
+                        vtype=self.expr.vtype.unref().llvm_type(),
+                        v_val=codelines[-1].get_var_name(),
+                        ttype=self.tvtype.unref().llvm_type()
+                    )))
             vname = codelines[-1].get_var_name()
-            vtype = self.expr.vtype.unref()
+            vtype = self.tvtype.unref()
             if not vtype.is_void():
                 rline = "ret {type} {name}".format(name=vname,
                                                    type=vtype.llvm_type())
